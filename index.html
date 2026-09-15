@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>战伤救护交互教学 · v20</title>
+<style>
+  html { overflow-y: scroll; overflow-x: hidden; height: 100%; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #0a0e14; color: #e6edf3; min-height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 12px; touch-action: manipulation;
+    overflow-x: hidden; width: 100%;
+  }
+  .page { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .hidden { display: none !important; }
+
+  /* ===== 首页 ===== */
+  .home-title { font-size: 1.5rem; font-weight: 700; color: #58a6ff; margin-bottom: 4px; text-align: center; letter-spacing: 0.05em; }
+  .home-sub { font-size: 0.78rem; color: #8b949e; margin-bottom: 28px; text-align: center; line-height: 1.7; }
+  .home-logo { font-size: 3.5rem; margin-bottom: 8px; filter: drop-shadow(0 0 20px rgba(88,166,255,0.4)); }
+
+  .home-card {
+    width: 100%; padding: 22px 20px; border-radius: 16px;
+    background: linear-gradient(135deg, #111820, #0d1117);
+    border: 2px solid #1e2a3a; cursor: pointer;
+    transition: all .25s; display: flex; align-items: center; gap: 16px;
+    text-align: left; position: relative; overflow: hidden;
+  }
+  .home-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at top right, rgba(88,166,255,0.08), transparent 60%);
+    pointer-events: none;
+  }
+  .home-card:active { transform: scale(0.98); }
+  .home-card.learn { border-color: #1f6feb; }
+  .home-card.learn:hover { border-color: #58a6ff; box-shadow: 0 0 24px rgba(31,111,235,0.3); }
+  .home-card.test { border-color: #238636; }
+  .home-card.test:hover { border-color: #3fb950; box-shadow: 0 0 24px rgba(35,134,54,0.3); }
+  .home-card .hc-icon { font-size: 2.4rem; flex-shrink: 0; }
+  .home-card .hc-body { flex: 1; }
+  .home-card .hc-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+  .home-card.learn .hc-title { color: #58a6ff; }
+  .home-card.test .hc-title { color: #3fb950; }
+  .home-card .hc-desc { font-size: 0.72rem; color: #8b949e; line-height: 1.5; }
+
+  /* ===== 通用页面 ===== */
+  .page-header {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding-bottom: 8px; border-bottom: 1px solid #1e2a3a; margin-bottom: 4px;
+  }
+  .page-header .ph-back {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid #30363d;
+    background: #161b22; color: #8b949e; font-size: 0.75rem; cursor: pointer;
+    min-height: 34px; display: flex; align-items: center; gap: 4px;
+  }
+  .page-header .ph-back:active { background: #21262d; }
+  .page-header .ph-title { font-size: 1rem; font-weight: 600; color: #58a6ff; }
+  .page-sub { font-size: 0.72rem; color: #8b949e; line-height: 1.6; text-align: center; margin-bottom: 6px; }
+
+  /* ===== 伤情选择卡片 ===== */
+  .scene-list {
+    width: 100%; display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px; padding: 4px 0;
+  }
+  .scene-item {
+    padding: 14px 12px; border-radius: 12px;
+    background: #111820; border: 2px solid #1e2a3a;
+    cursor: pointer; transition: all .2s;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    min-height: 70px; text-align: left;
+  }
+  .scene-item:active { transform: scale(0.97); }
+  .scene-item:hover { border-color: #1f6feb; background: #0d1a2d; }
+  .scene-item .si-icon { font-size: 1.4rem; }
+  .scene-item .si-name { font-size: 0.82rem; font-weight: 600; color: #e6edf3; }
+  .scene-item .si-desc { font-size: 0.65rem; color: #8b949e; line-height: 1.4; }
+
+  /* ===== 测试模式选择 ===== */
+  .test-mode-card {
+    width: 100%; padding: 22px 20px; border-radius: 16px;
+    background: linear-gradient(135deg, #111820, #0d1117);
+    border: 2px solid #1e2a3a; cursor: pointer; transition: all .25s;
+    display: flex; align-items: center; gap: 16px;
+    text-align: left; position: relative; overflow: hidden;
+  }
+  .test-mode-card:active { transform: scale(0.98); }
+  .test-mode-card.specialty { border-color: #a371f7; }
+  .test-mode-card.specialty:hover { border-color: #c4a5ff; box-shadow: 0 0 24px rgba(163,113,247,0.3); }
+  .test-mode-card.random { border-color: #f85149; }
+  .test-mode-card.random:hover { border-color: #ff7b72; box-shadow: 0 0 24px rgba(248,81,73,0.3); }
+  .test-mode-card .tmc-icon { font-size: 2.4rem; flex-shrink: 0; }
+  .test-mode-card .tmc-body { flex: 1; }
+  .test-mode-card .tmc-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+  .test-mode-card.specialty .tmc-title { color: #a371f7; }
+  .test-mode-card.random .tmc-title { color: #f85149; }
+  .test-mode-card .tmc-desc { font-size: 0.72rem; color: #8b949e; line-height: 1.55; }
+
+  /* ===== 游戏页顶部信息 ===== */
+  .game-topbar {
+    width: 100%; display: flex; align-items: center; gap: 8px;
+    padding: 6px 0 8px; margin-bottom: 2px;
+  }
+  .game-topbar .gt-back {
+    padding: 6px 10px; border-radius: 8px; border: 1px solid #30363d;
+    background: #161b22; color: #8b949e; font-size: 0.72rem; cursor: pointer;
+    min-height: 34px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .game-topbar .gt-back:active { background: #21262d; }
+  .game-topbar .gt-scene {
+    flex: 1; text-align: center; font-size: 0.78rem; color: #8b949e;
+    padding: 5px 10px; border-radius: 8px; background: #111820;
+    border: 1px solid #1e2a3a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .game-topbar .gt-scene strong { color: #58a6ff; font-weight: 600; }
+  .game-topbar .gt-scene.unknown strong { color: #d29922; }
+
+  /* ===== 结算页 ===== */
+  .result-card {
+    width: 100%; padding: 32px 24px; border-radius: 20px;
+    background: linear-gradient(135deg, #111820, #0a0e14);
+    border: 2px solid #1e2a3a; text-align: center;
+    position: relative; overflow: hidden; margin-top: 20px;
+  }
+  .result-card.success { border-color: #238636; }
+  .result-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at top, rgba(63,185,80,0.12), transparent 70%);
+    pointer-events: none;
+  }
+  .result-icon { font-size: 4rem; margin-bottom: 8px; filter: drop-shadow(0 0 24px rgba(63,185,80,0.5)); }
+  .result-title { font-size: 1.3rem; font-weight: 700; color: #3fb950; margin-bottom: 10px; }
+  .result-text { font-size: 0.82rem; color: #adb5bd; line-height: 1.7; margin-bottom: 6px; }
+  .result-sub { font-size: 0.72rem; color: #8b949e; line-height: 1.6; margin-bottom: 20px; padding: 10px 14px; background: #0a0e14; border-radius: 8px; border-left: 3px solid #d29922; text-align: left; }
+  .result-sub strong { color: #f0c860; }
+
+  /* 错误详情列表 */
+  .error-list {
+    width: 100%; text-align: left; margin-bottom: 20px;
+    max-height: 280px; overflow-y: auto;
+  }
+  .error-list-title {
+    font-size: 0.78rem; font-weight: 600; color: #f85149;
+    margin-bottom: 8px; padding-left: 4px; letter-spacing: 0.03em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .error-item {
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 8px;
+    background: #1a0a0c; border: 1px solid #3d1414;
+    border-left: 3px solid #da3633;
+  }
+  .error-item .ei-step {
+    font-size: 0.72rem; color: #8b949e; margin-bottom: 5px;
+  }
+  .error-item .ei-row {
+    font-size: 0.78rem; line-height: 1.6; display: flex; gap: 6px;
+    align-items: flex-start;
+  }
+  .error-item .ei-row + .ei-row { margin-top: 4px; }
+  .error-item .ei-row .ei-label {
+    flex-shrink: 0; font-weight: 600;
+  }
+  .error-item .ei-row.wrong .ei-label { color: #f85149; }
+  .error-item .ei-row.right .ei-label { color: #3fb950; }
+  .error-item .ei-row.wrong .ei-value { color: #ff9b95; text-decoration: line-through; }
+  .error-item .ei-row.right .ei-value { color: #7ee787; font-weight: 500; }
+
+  .result-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .result-btn {
+    width: 100%; padding: 14px; border-radius: 12px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: all .2s; min-height: 50px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .result-btn.primary { background: #238636; border: none; color: #fff; }
+  .result-btn.primary:active { background: #1a6b2a; transform: scale(0.98); }
+  .result-btn.secondary { background: #161b22; border: 1px solid #30363d; color: #8b949e; }
+  .result-btn.secondary:active { background: #21262d; transform: scale(0.98); }
+
+  /* ===== 游戏页通用（沿用 v18） ===== */
+  .stage-bar { display: flex; gap: 4px; margin-bottom: 10px; width: 100%; max-width: 420px; }
+  .stage-dot { flex: 1; text-align: center; font-size: 0.6rem; color: #484f58; padding: 6px 2px; border-radius: 6px; background: #111820; border: 1px solid #1e2a3a; transition: all .3s; }
+  .stage-dot.active { color: #58a6ff; border-color: #1f6feb; background: #0d1a2d; }
+  .stage-dot.done { color: #3fb950; border-color: #238636; background: #0a1f12; }
+
+  .main-area { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; overflow: hidden; }
+  .main-area > * { width: 100%; box-sizing: border-box; }
+
+  .guide-tip { width: 100%; padding: 9px 14px; border-radius: 10px; font-size: 0.75rem; line-height: 1.6; color: #a8c8ff; background: rgba(13, 26, 45, 0.96); border: 1px solid #1f6feb; transition: all .3s; }
+  .guide-tip .gt-title { display: inline-block; font-weight: 700; font-size: 0.72rem; color: #58a6ff; margin-right: 8px; letter-spacing: 0.03em; }
+  .guide-tip .gt-step { display: block; color: #adb5bd; padding-left: 2px; }
+  .guide-tip .gt-step strong { color: #f0c860; font-weight: 600; }
+  .guide-tip.scan-tip { background: rgba(45, 31, 10, 0.96); border-color: #d29922; color: #f0c860; }
+  .guide-tip.scan-tip .gt-title { color: #d29922; }
+  .guide-tip.transfer-tip { background: rgba(45, 10, 12, 0.96); border-color: #f85149; color: #ffb0a8; }
+  .guide-tip.transfer-tip .gt-title { color: #f85149; }
+  .guide-tip.treat-tip { background: rgba(13, 26, 45, 0.96); border-color: #1f6feb; color: #a8c8ff; }
+  .guide-tip.treat-tip .gt-title { color: #58a6ff; }
+  .battlefield, .casualty-area { width: 100%; background: #0d1117; border-radius: 14px; border: 1px solid #1e2a3a; position: relative; overflow: hidden; height: 380px; flex-shrink: 0; touch-action: none; user-select: none; }
+  .casualty-area { background: #111820; display: flex; align-items: center; justify-content: center; }
+  .battlefield-svg, .casualty-svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+  .safe-zone { position: absolute; right: 6px; top: 60px; width: 78px; height: 250px; border: 2px dashed #3fb950; border-radius: 10px; background: rgba(63,185,80,0.06); pointer-events: none; }
+  .safe-zone-label { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-size: 0.65rem; color: #3fb950; font-weight: bold; }
+  .casualty-draggable { position: absolute; left: 30px; top: 130px; width: 80px; height: 110px; cursor: grab; touch-action: none; z-index: 10; user-select: none; transition: left .4s ease, top .4s ease; }
+  .casualty-draggable:active { cursor: grabbing; }
+  .casualty-draggable.dragging { filter: drop-shadow(0 0 16px #58a6ff); transition: none; }
+  .casualty-draggable svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+  .carry-select, .toolbar-scroll { width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; height: 96px; flex-shrink: 0; padding: 8px 2px; }
+  .carry-select { height: 68px; }
+  .toolbar-scroll { cursor: grab; }
+  .carry-select::-webkit-scrollbar, .toolbar-scroll::-webkit-scrollbar { height: 4px; }
+  .carry-select::-webkit-scrollbar-thumb, .toolbar-scroll::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+  .carry-select { display: flex; gap: 8px; }
+  .carry-btn { flex-shrink: 0; padding: 8px 14px; border-radius: 8px; border: 2px solid #21262d; background: #161b22; color: #8b949e; font-size: 0.75rem; cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 4px; transition: all .2s; }
+  .carry-btn.selected { border-color: #1f6feb; color: #58a6ff; background: #0d1a2d; }
+  .carry-btn.correct { border-color: #238636; color: #3fb950; background: #0a1f12; }
+  .carry-btn.wrong { border-color: #da3633; color: #f85149; background: #1f0a0c; }
+  .tool-cards { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 4px 0; min-height: 84px; }
+  .tool-card { padding: 10px 6px; border-radius: 10px; border: 2px solid #21262d; background: #161b22; color: #8b949e; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; min-height: 76px; animation: cardIn .28s ease-out; }
+  @keyframes cardIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+  .tool-card:active { transform: scale(0.96); }
+  .tool-card.viewing { border-color: #1f6feb; background: #0d1a2d; }
+  .tool-card.wrong { border-color: #da3633; background: #1f0a0c; }
+  .tool-card .tc-icon { font-size: 1.5rem; }
+  .tool-card .tc-label { font-size: 0.68rem; font-weight: 600; color: #e6edf3; line-height: 1.2; }
+  .tool-card.viewing .tc-label { color: #58a6ff; }
+  .evac-cards { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 4px 0; min-height: 148px; }
+  .evac-card { padding: 10px 12px; border-radius: 10px; border: 2px solid #21262d; background: #161b22; color: #8b949e; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; gap: 3px; min-height: 60px; }
+  .evac-card:active { transform: scale(0.97); }
+  .evac-card.viewing { border-color: #1f6feb; background: #0d1a2d; color: #58a6ff; }
+  .evac-card.correct { border-color: #238636; background: #0a1f12; color: #3fb950; }
+  .evac-card.wrong { border-color: #da3633; background: #1f0a0c; color: #f85149; }
+  .evac-card .ec-icon { font-size: 1.4rem; }
+  .evac-card .ec-label { font-size: 0.82rem; font-weight: 600; color: #e6edf3; }
+  .evac-card.viewing .ec-label { color: #58a6ff; }
+  .evac-card .ec-tag { font-size: 0.68rem; color: #8b949e; line-height: 1.3; }
+  .evac-detail, .tool-detail { width: 100%; border-radius: 12px; background: #111820; border: 1px solid #1e2a3a; overflow: hidden; min-height: 300px; }
+  .evac-detail-header, .tool-detail-header { padding: 12px 16px; background: linear-gradient(90deg, #1f0d2d, #111820); border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; gap: 10px; }
+  .tool-detail-header { background: linear-gradient(90deg, #0d1a2d, #111820); }
+  .evac-detail-header .edh-icon, .tool-detail-header .tdh-icon { font-size: 1.6rem; }
+  .evac-detail-header .edh-title { font-size: 1rem; font-weight: 600; color: #a371f7; }
+  .tool-detail-header .tdh-title { font-size: 1rem; font-weight: 600; color: #58a6ff; }
+  .evac-detail-body, .tool-detail-body { padding: 14px 16px 16px; }
+  .evac-block { margin-bottom: 12px; }
+  .evac-block:last-child { margin-bottom: 0; }
+  .evac-block .eb-title { font-size: 0.78rem; font-weight: 600; color: #d29922; margin-bottom: 6px; letter-spacing: 0.03em; }
+  .evac-block .eb-title.green { color: #3fb950; }
+  .evac-block .eb-title.red { color: #f85149; }
+  .evac-block .eb-title.blue { color: #58a6ff; }
+  .evac-block .eb-text { font-size: 0.85rem; line-height: 1.7; color: #adb5bd; }
+  .evac-block ul { list-style: none; padding: 0; }
+  .evac-block li { font-size: 0.85rem; line-height: 1.7; color: #adb5bd; padding-left: 18px; position: relative; }
+  .evac-block li::before { content: '•'; position: absolute; left: 6px; color: #58a6ff; }
+  .evac-block.pros li::before { color: #3fb950; content: '✓'; font-weight: bold; }
+  .evac-block.cons li::before { color: #f85149; content: '✕'; font-weight: bold; }
+  .evac-confirm-btn, .tool-confirm-btn { width: 100%; padding: 12px; border-radius: 10px; background: #238636; border: none; color: #fff; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 12px; min-height: 46px; transition: background .2s; }
+  .evac-confirm-btn:active, .tool-confirm-btn:active { background: #1a6b2a; }
+  .evac-confirm-btn:disabled, .tool-confirm-btn:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+  .tool-confirm-btn { background: #1f6feb; }
+  .tool-confirm-btn:active { background: #1553b8; }
+  .magnifier { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 2px solid #58a6ff; background: rgba(88,166,255,0.08); pointer-events: none; display: none; z-index: 50; box-shadow: 0 0 20px rgba(88,166,255,0.3), inset 0 0 20px rgba(88,166,255,0.1); transform: translate(-50%, -50%); }
+  .magnifier::after { content: '🔍'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 1.6rem; opacity: 0.6; }
+  .magnifier.show { display: block; }
+  .toolbar { display: flex; gap: 8px; width: max-content; height: 100%; }
+  .tool-item { flex-shrink: 0; width: 72px; height: 72px; border-radius: 10px; background: #161b22; border: 2px solid #21262d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: grab; touch-action: none; user-select: none; font-size: 0.6rem; color: #8b949e; transition: border-color .2s, transform .15s, opacity .3s; }
+  .tool-item:active { transform: scale(0.94); }
+  .tool-item.dragging { opacity: 0.4; border-color: #1f6feb; }
+  .tool-item .icon { font-size: 1.6rem; }
+  .tool-item.disabled { opacity: 0.25; pointer-events: none; }
+  .step-hint { width: 100%; border-radius: 12px; background: #111820; border: 1px solid #1e2a3a; overflow: hidden; display: none; min-height: 160px; }
+  .step-hint.show { display: block; }
+  .step-hint .hint-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: linear-gradient(90deg, #0d1a2d, #111820); border-bottom: 1px solid #1e2a3a; }
+  .step-hint .num { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; border-radius: 8px; background: #1f6feb; color: #fff; font-size: 0.9rem; font-weight: bold; flex-shrink: 0; box-shadow: 0 2px 8px rgba(31,111,235,0.4); }
+  .step-hint .hint-title { font-size: 1rem; font-weight: 600; color: #58a6ff; letter-spacing: 0.02em; }
+  .step-hint .hint-sub { font-size: 0.7rem; color: #8b949e; margin-left: auto; padding: 3px 8px; background: #0a0e14; border-radius: 5px; border: 1px solid #1e2a3a; }
+  .step-hint .hint-body { padding: 14px 16px 16px; }
+  .step-hint .hint-text { font-size: 0.95rem; line-height: 1.65; color: #e6edf3; font-weight: 500; }
+  .step-hint .hint-detail { font-size: 0.85rem; line-height: 1.75; color: #adb5bd; padding: 12px 14px; background: #0a0e14; border-radius: 8px; border-left: 3px solid #d29922; margin-top: 12px; }
+  .step-hint .hint-detail .detail-title { display: block; font-weight: 600; color: #d29922; font-size: 0.8rem; margin-bottom: 6px; letter-spacing: 0.05em; }
+  .step-hint .hint-detail strong { color: #f0c860; font-weight: 600; }
+  .step-hint .hint-detail .warn { color: #f85149; font-weight: 600; }
+  .step-hint.scan-mode .hint-header { background: linear-gradient(90deg, #2d1f0a, #111820); }
+  .step-hint.scan-mode .num { background: #d29922; box-shadow: 0 2px 8px rgba(210,153,34,0.4); }
+  .step-hint.scan-mode .hint-title { color: #d29922; }
+  .step-hint.transfer-mode .hint-header { background: linear-gradient(90deg, #2d0a0c, #111820); }
+  .step-hint.transfer-mode .num { background: #f85149; box-shadow: 0 2px 8px rgba(248,81,73,0.4); }
+  .step-hint.transfer-mode .hint-title { color: #f85149; }
+  .step-hint.evac-mode .hint-header { background: linear-gradient(90deg, #1f0d2d, #111820); }
+  .step-hint.evac-mode .num { background: #a371f7; box-shadow: 0 2px 8px rgba(163,113,247,0.4); }
+  .step-hint.evac-mode .hint-title { color: #a371f7; }
+  .feedback { width: 100%; padding: 9px 12px; border-radius: 9px; font-size: 0.8rem; display: none; line-height: 1.4; min-height: 0; }
+  .feedback.success { display: block; background: #0a1f12; border: 1px solid #238636; color: #3fb950; }
+  .feedback.error { display: block; background: #1f0a0c; border: 1px solid #da3633; color: #f85149; }
+  .progress-bar { width: 100%; display: flex; gap: 3px; margin-top: 2px; }
+  .progress-dot { flex: 1; height: 3px; border-radius: 2px; background: #21262d; transition: background .3s; }
+  .progress-dot.done { background: #238636; }
+  .progress-dot.current { background: #1f6feb; }
+  .test-stats { width: 100%; display: none; padding: 9px 12px; border-radius: 9px; background: #111820; border: 1px solid #1e2a3a; font-size: 0.78rem; }
+  .test-stats.show { display: block; }
+  .test-stats .err-item { color: #f85149; margin-top: 3px; font-size: 0.75rem; }
+  .reset-btn { margin-top: 6px; margin-bottom: 20px; padding: 9px 26px; border-radius: 9px; background: #161b22; border: 1px solid #21262d; color: #8b949e; font-size: 0.82rem; cursor: pointer; min-height: 42px; }
+  .reset-btn:active { background: #21262d; }
+
+  .evac-anim { position: fixed; inset: 0; z-index: 2000; background: rgba(10,14,20,0.94); display: none; align-items: center; justify-content: center; backdrop-filter: blur(6px); flex-direction: column; }
+  .evac-anim.show { display: flex; }
+  .evac-anim-stage { position: relative; width: 100%; height: 60vh; overflow: hidden; }
+  .evac-anim-ground { position: absolute; bottom: 38%; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #3fb950 15%, #3fb950 85%, transparent); opacity: 0.5; }
+  .evac-anim-group { position: absolute; bottom: 38%; left: -60%; font-size: 3rem; line-height: 1; display: flex; align-items: flex-end; gap: 2px; transform: translateY(60%); white-space: nowrap; animation: evacMove 4s ease-in-out forwards; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }
+  .evac-anim-group span { display: inline-block; }
+  .evac-anim-group span.bob { animation: evacBob 0.5s ease-in-out infinite alternate; }
+  @keyframes evacBob { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+  @keyframes evacMove { 0% { left: -60%; opacity: 0; } 12% { opacity: 1; } 38% { left: 42%; opacity: 1; } 62% { left: 50%; opacity: 1; } 88% { left: 130%; opacity: 1; } 100% { left: 130%; opacity: 0; } }
+  .evac-anim-label { position: absolute; top: 18%; left: 0; right: 0; text-align: center; opacity: 0; animation: evacLabel 4s ease-in-out forwards; padding: 0 20px; }
+  @keyframes evacLabel { 0%, 28% { opacity: 0; transform: translateY(12px); } 42%, 68% { opacity: 1; transform: translateY(0); } 88%, 100%{ opacity: 0; transform: translateY(-8px); } }
+  .evac-anim-label .eal-main { font-size: 1.15rem; font-weight: 700; color: #a371f7; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .evac-anim-label .eal-sub { font-size: 0.82rem; color: #8b949e; line-height: 1.6; }
+  .evac-anim-hint { position: absolute; bottom: 12%; left: 0; right: 0; text-align: center; font-size: 0.72rem; color: #484f58; letter-spacing: 0.15em; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- 页面 1：首页 -->
+<!-- ============================================================ -->
+<div id="homePage" class="page">
+  <div class="home-logo">🩺</div>
+  <div class="home-title">战伤救护交互教学</div>
+  <div class="home-sub">发现伤员 → 检伤评估 → 转移 → 救护 → 后送<br>通过交互式模拟，掌握战场急救流程</div>
+
+  <div class="home-card learn" id="homeLearnBtn">
+    <div class="hc-icon">📖</div>
+    <div class="hc-body">
+      <div class="hc-title">教学模式</div>
+      <div class="hc-desc">选择不同伤情，逐步学习完整救治流程。带详细操作提示与原理讲解。</div>
+    </div>
+  </div>
+
+  <div class="home-card test" id="homeTestBtn">
+    <div class="hc-icon">🎯</div>
+    <div class="hc-body">
+      <div class="hc-title">测试模式</div>
+      <div class="hc-desc">检验你对战伤救护流程的掌握程度。可选专项测试或全随机模式。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 页面 2：教学模式 - 伤情选择 -->
+<!-- ============================================================ -->
+<div id="learnScenePage" class="page hidden">
+  <div class="page-header">
+    <button class="ph-back" id="learnBackBtn">← 首页</button>
+    <span class="ph-title">选择学习伤情</span>
+  </div>
+  <div class="page-sub">点击任一伤情卡片，进入教学模式学习完整救护流程</div>
+  <div class="scene-list" id="learnSceneList"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 页面 3：测试模式选择 -->
+<!-- ============================================================ -->
+<div id="testModePage" class="page hidden">
+  <div class="page-header">
+    <button class="ph-back" id="testModeBackBtn">← 首页</button>
+    <span class="ph-title">选择测试模式</span>
+  </div>
+  <div class="page-sub">两种测试模式，检验你对战伤救护的掌握程度</div>
+
+  <div class="test-mode-card specialty" id="testSpecialtyBtn">
+    <div class="tmc-icon">🎯</div>
+    <div class="tmc-body">
+      <div class="tmc-title">专项测试</div>
+      <div class="tmc-desc">自主选择想测试的伤情专项。进入后先看到伤情名称，检验该伤情的完整救护流程。</div>
+    </div>
+  </div>
+
+  <div class="test-mode-card random" id="testRandomBtn">
+    <div class="tmc-icon">🎲</div>
+    <div class="tmc-body">
+      <div class="tmc-title">全随机模式</div>
+      <div class="tmc-desc">每次随机发放伤情，前期不做提示。需在检伤环节通过扫描确认伤情，再开展救护。难度最高。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 页面 4：专项测试 - 伤情选择 -->
+<!-- ============================================================ -->
+<div id="testScenePage" class="page hidden">
+  <div class="page-header">
+    <button class="ph-back" id="testSceneBackBtn">← 返回</button>
+    <span class="ph-title">选择测试专项</span>
+  </div>
+  <div class="page-sub">选择要测试的伤情，进入后按规范完成全部救护流程</div>
+  <div class="scene-list" id="testSceneList"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 页面 5：游戏页 -->
+<!-- ============================================================ -->
+<div id="gamePage" class="page hidden">
+  <div class="game-topbar">
+    <button class="gt-back" id="gameBackBtn">← 返回</button>
+    <div class="gt-scene" id="gameSceneLabel">伤情：<strong>-</strong></div>
+  </div>
+
+  <div class="stage-bar" id="stageBar">
+    <div class="stage-dot active" data-stage="transfer">① 火线转移</div>
+    <div class="stage-dot" data-stage="treat">② 检伤救护</div>
+    <div class="stage-dot" data-stage="evac">③ 后送</div>
+  </div>
+
+  <div class="main-area">
+
+    <div id="transferStage">
+      <div class="guide-tip transfer-tip" style="margin-bottom:8px;">
+        <span class="gt-title">📖 操作指引</span>
+        <span class="gt-step"><strong>①</strong> 根据战场环境选择搬运方式</span>
+        <span class="gt-step"><strong>②</strong> 按住伤员拖拽到右侧安全区</span>
+        <span class="gt-step"><strong>③</strong> 到达安全区后自动判定选择是否正确</span>
+      </div>
+      <div class="battlefield" id="battlefield">
+        <svg class="battlefield-svg" viewBox="0 0 420 380" preserveAspectRatio="xMidYMid meet">
+          <rect x="0" y="0" width="420" height="380" fill="#0d1117"/>
+          <rect x="0" y="0" width="120" height="380" fill="rgba(218,54,51,0.08)"/>
+          <text x="60" y="30" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ 火力威胁区</text>
+          <rect x="342" y="0" width="78" height="380" fill="rgba(63,185,80,0.06)"/>
+          <text x="381" y="30" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="bold">安全区</text>
+          <line x1="120" y1="0" x2="120" y2="380" stroke="#da3633" stroke-width="1" stroke-dasharray="6,4" opacity="0.5"/>
+          <line x1="342" y1="0" x2="342" y2="380" stroke="#3fb950" stroke-width="1" stroke-dasharray="6,4" opacity="0.5"/>
+          <rect x="200" y="90" width="30" height="200" rx="4" fill="#1a2a1a" stroke="#2a3a2a" stroke-width="1"/>
+          <text x="215" y="82" text-anchor="middle" fill="#3fb950" font-size="11">掩体</text>
+          <circle cx="200" cy="70" r="3" fill="#da3633" opacity="0.6">
+            <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        <div class="casualty-draggable" id="casualtyDraggable">
+          <svg viewBox="0 0 80 110">
+            <circle cx="40" cy="20" r="14" fill="#c4a882" stroke="#8a7050" stroke-width="1.5"/>
+            <path d="M26 15 Q30 2 40 1 Q50 2 54 15 Q50 8 40 7 Q30 8 26 15Z" fill="#1a1a1a"/>
+            <circle cx="35" cy="19" r="1.8" fill="#2a1a0a"/>
+            <circle cx="45" cy="19" r="1.8" fill="#2a1a0a"/>
+            <rect x="24" y="36" width="32" height="40" rx="8" fill="#2d3a2d" stroke="#111" stroke-width="1"/>
+            <rect x="30" y="42" width="20" height="14" rx="3" fill="#1a231a" stroke="#2a3a2a" stroke-width="0.8"/>
+            <rect x="14" y="38" width="10" height="32" rx="5" fill="#2d3a2d" stroke="#111" stroke-width="1"/>
+            <rect x="56" y="38" width="10" height="32" rx="5" fill="#2d3a2d" stroke="#111" stroke-width="1"/>
+            <rect x="28" y="76" width="10" height="26" rx="4" fill="#1a1a1a" stroke="#0d0d0d" stroke-width="1"/>
+            <rect x="42" y="76" width="10" height="26" rx="4" fill="#1a1a1a" stroke="#0d0d0d" stroke-width="1"/>
+            <circle cx="40" cy="58" r="4" fill="#da3633" opacity="0.8">
+              <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.2s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+        </div>
+        <div class="safe-zone">
+          <div class="safe-zone-label">安全区</div>
+        </div>
+      </div>
+      <div class="step-hint transfer-mode show" id="transferHint" style="margin-top:10px;">
+        <div class="hint-header">
+          <span class="num">!</span>
+          <span class="hint-title">火线转移</span>
+        </div>
+        <div class="hint-body">
+          <div class="hint-text" id="transferText">选择正确的搬运方式</div>
+        </div>
+      </div>
+      <div class="carry-select" id="carrySelect"></div>
+      <div class="feedback" id="transferFeedback"></div>
+    </div>
+
+    <div id="treatStage" class="hidden">
+      <div class="guide-tip treat-tip" id="treatGuide" style="margin-bottom:8px;">
+        <span class="gt-title">📖 操作指引</span>
+        <span class="gt-step" id="treatGuideText">按住手指或鼠标，在伤员身上滑动扫描</span>
+      </div>
+      <div class="casualty-area" id="casualtyArea">
+        <svg class="casualty-svg" viewBox="0 0 320 400" id="casualtySvg" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <radialGradient id="skinGrad" cx="48%" cy="28%" r="62%">
+              <stop offset="0%" stop-color="#d4b892"/>
+              <stop offset="55%" stop-color="#c4a882"/>
+              <stop offset="100%" stop-color="#9a7e58"/>
+            </radialGradient>
+            <linearGradient id="clothesGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#334233"/>
+              <stop offset="100%" stop-color="#1f2a1f"/>
+            </linearGradient>
+            <linearGradient id="pantsGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2e2e2e"/>
+              <stop offset="100%" stop-color="#1a1a1a"/>
+            </linearGradient>
+            <linearGradient id="bandageGrad" x1="0" y1="0" x2="0.25" y2="1">
+              <stop offset="0%" stop-color="#f5c860"/>
+              <stop offset="35%" stop-color="#e8a830"/>
+              <stop offset="100%" stop-color="#c08818"/>
+            </linearGradient>
+            <linearGradient id="bandageGradDark" x1="0" y1="0" x2="0.25" y2="1">
+              <stop offset="0%" stop-color="#d8a840"/>
+              <stop offset="100%" stop-color="#a07010"/>
+            </linearGradient>
+            <linearGradient id="gauzeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f5f0e8"/>
+              <stop offset="100%" stop-color="#d8d0c0"/>
+            </linearGradient>
+            <filter id="clothShadow" x="-10%" y="-10%" width="130%" height="130%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1.2"/>
+              <feOffset dx="0.8" dy="1"/>
+              <feComponentTransfer><feFuncA type="linear" slope="0.35"/></feComponentTransfer>
+              <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <ellipse cx="160" cy="378" rx="112" ry="16" fill="#0a0e14" opacity="0.6"/>
+
+          <g id="legsGroup">
+            <path d="M120 270 Q118 294 122 318 L154 318 Q152 294 154 270 Q148 264 137 264 Q126 264 120 270Z" fill="url(#pantsGrad)" stroke="#111" stroke-width="1"/>
+            <path d="M122 318 Q120 340 124 362 L152 362 Q150 340 154 318Z" fill="url(#pantsGrad)" stroke="#111" stroke-width="1"/>
+            <path d="M116 360 Q114 368 118 376 L158 376 Q160 368 158 360Z" fill="#1a1a1a" stroke="#0d0d0d" stroke-width="1"/>
+            <path d="M166 270 Q164 294 168 318 L200 318 Q198 294 200 270 Q194 264 183 264 Q172 264 166 270Z" fill="url(#pantsGrad)" stroke="#111" stroke-width="1"/>
+            <path d="M168 318 Q166 340 170 362 L198 362 Q196 340 200 318Z" fill="url(#pantsGrad)" stroke="#111" stroke-width="1"/>
+            <path d="M162 360 Q160 368 164 376 L204 376 Q206 368 204 360Z" fill="#1a1a1a" stroke="#0d0d0d" stroke-width="1"/>
+            <circle cx="137" cy="270" r="3" fill="#d29922" opacity="0.65"/>
+            <circle cx="183" cy="270" r="3" fill="#d29922" opacity="0.65"/>
+            <circle cx="137" cy="318" r="3" fill="#d29922" opacity="0.65"/>
+            <circle cx="183" cy="318" r="3" fill="#d29922" opacity="0.65"/>
+            <circle cx="137" cy="362" r="3" fill="#d29922" opacity="0.65"/>
+            <circle cx="183" cy="362" r="3" fill="#d29922" opacity="0.65"/>
+          </g>
+
+          <path d="M98 152 Q96 130 118 128 L202 128 Q224 130 222 152 L222 260 Q224 278 202 278 L118 278 Q96 278 98 260Z" fill="url(#clothesGrad)" stroke="#111" stroke-width="1.5"/>
+          <path d="M110 143 L210 143 L210 200 L110 200Z" fill="#1a231a" stroke="#2a3a2a" stroke-width="0.8" rx="5"/>
+          <line x1="116" y1="152" x2="204" y2="152" stroke="#253025" stroke-width="1.2"/>
+          <line x1="116" y1="162" x2="204" y2="162" stroke="#253025" stroke-width="1.2"/>
+          <line x1="116" y1="172" x2="204" y2="172" stroke="#253025" stroke-width="1.2"/>
+          <rect x="122" y="178" width="26" height="16" rx="3" fill="#121a12" stroke="#2a3a2a" stroke-width="0.6"/>
+          <rect x="172" y="178" width="26" height="16" rx="3" fill="#121a12" stroke="#2a3a2a" stroke-width="0.6"/>
+          <line x1="160" y1="143" x2="160" y2="200" stroke="#253025" stroke-width="0.8"/>
+          <path d="M118 210 Q130 207 140 212" stroke="#1a261a" stroke-width="0.8" fill="none" opacity="0.5"/>
+          <path d="M180 215 Q190 211 200 217" stroke="#1a261a" stroke-width="0.8" fill="none" opacity="0.5"/>
+
+          <path d="M62 145 Q58 162 62 182 L88 182 Q92 162 90 145 Q80 138 74 138 Q66 138 62 145Z" fill="url(#clothesGrad)" stroke="#111" stroke-width="1"/>
+          <path d="M62 182 Q58 200 62 218 L88 218 Q92 200 90 182Z" fill="url(#clothesGrad)" stroke="#111" stroke-width="1"/>
+          <path d="M68 218 Q62 226 66 238 Q70 248 78 248 Q86 248 88 238 Q92 226 86 218Z" fill="url(#skinGrad)" stroke="#8a7050" stroke-width="0.8"/>
+          <path d="M70 238 Q74 244 78 244" stroke="#a08860" stroke-width="0.6" fill="none"/>
+          <circle cx="77" cy="142" r="3" fill="#d29922" opacity="0.65"/>
+          <circle cx="77" cy="182" r="3" fill="#d29922" opacity="0.65"/>
+          <circle cx="77" cy="220" r="3" fill="#d29922" opacity="0.65"/>
+
+          <path d="M228 145 Q224 162 228 182 L254 182 Q258 162 256 145 Q246 138 240 138 Q232 138 228 145Z" fill="url(#clothesGrad)" stroke="#111" stroke-width="1"/>
+          <path d="M228 182 Q224 200 228 218 L254 218 Q258 200 256 182Z" fill="url(#clothesGrad)" stroke="#111" stroke-width="1"/>
+          <path d="M234 218 Q228 226 232 238 Q236 248 244 248 Q252 248 254 238 Q258 226 252 218Z" fill="url(#skinGrad)" stroke="#8a7050" stroke-width="0.8"/>
+          <path d="M236 238 Q240 244 244 244" stroke="#a08860" stroke-width="0.6" fill="none"/>
+          <circle cx="243" cy="142" r="3" fill="#d29922" opacity="0.65"/>
+          <circle cx="243" cy="182" r="3" fill="#d29922" opacity="0.65"/>
+          <circle cx="243" cy="220" r="3" fill="#d29922" opacity="0.65"/>
+
+          <path d="M145 112 Q143 104 148 100 L172 100 Q177 104 175 112 L172 132 L148 132Z" fill="url(#skinGrad)" stroke="#8a7050" stroke-width="0.8"/>
+
+          <ellipse cx="160" cy="78" rx="40" ry="44" fill="url(#skinGrad)" stroke="#8a7050" stroke-width="1"/>
+          <path d="M120 70 Q124 34 145 28 Q160 25 175 28 Q196 34 200 70 Q195 50 180 44 Q160 40 140 44 Q125 50 120 70Z" fill="#1a1a1a"/>
+          <path d="M136 62 Q148 58 158 60" stroke="#a08860" stroke-width="0.8" fill="none" opacity="0.5"/>
+          <path d="M184 62 Q172 58 162 60" stroke="#a08860" stroke-width="0.8" fill="none" opacity="0.5"/>
+          <ellipse cx="147" cy="72" rx="5.5" ry="4.2" fill="#fff"/>
+          <ellipse cx="173" cy="72" rx="5.5" ry="4.2" fill="#fff"/>
+          <circle cx="148" cy="73" r="2.5" fill="#2a1a0a"/>
+          <circle cx="174" cy="73" r="2.5" fill="#2a1a0a"/>
+          <circle cx="149" cy="72" r="1" fill="#fff" opacity="0.7"/>
+          <circle cx="175" cy="72" r="1" fill="#fff" opacity="0.7"/>
+          <path d="M139 64 Q146 60 154 63" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M181 64 Q174 60 166 63" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M158 78 Q156 84 158 88" stroke="#a08860" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M148 94 Q160 99 172 94" stroke="#8a5050" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+          <g id="woundLayer"></g>
+          <g id="toolLayer"></g>
+        </svg>
+        <div class="magnifier" id="magnifier"></div>
+      </div>
+
+      <div class="step-hint" id="stepHint" style="margin-top:10px;">
+        <div class="hint-header">
+          <span class="num" id="hintNum">1</span>
+          <span class="hint-title" id="hintTitle">步骤标题</span>
+          <span class="hint-sub" id="hintSub">步骤 1 / N</span>
+        </div>
+        <div class="hint-body">
+          <div class="hint-text" id="hintText">步骤说明</div>
+          <div class="hint-detail" id="hintDetail" style="display:none;">
+            <span class="detail-title">📌 操作要点</span>
+            <span id="hintDetailText"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="test-stats" id="testStats"></div>
+
+      <div class="toolbar-scroll" id="toolbarScroll">
+        <div class="toolbar" id="toolbar"></div>
+      </div>
+
+      <div class="tool-cards hidden" id="toolCards"></div>
+      <div class="tool-detail hidden" id="toolDetail">
+        <div class="tool-detail-header">
+          <span class="tdh-icon" id="tdhIcon">🩹</span>
+          <span class="tdh-title" id="tdhTitle">器材</span>
+        </div>
+        <div class="tool-detail-body">
+          <div class="evac-block">
+            <div class="eb-title blue">📋 用途</div>
+            <div class="eb-text" id="tdUsage"></div>
+          </div>
+          <div class="evac-block" id="tdDetailBlock">
+            <div class="eb-title">🔧 操作要点</div>
+            <div class="eb-text" id="tdDetail"></div>
+          </div>
+          <button class="tool-confirm-btn" id="toolConfirmBtn" disabled>请先点击上方卡片查看详情</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="evacStage" class="hidden">
+      <div class="step-hint evac-mode show" id="evacHint">
+        <div class="hint-header">
+          <span class="num">🚑</span>
+          <span class="hint-title">后送搬运 · 选择方式</span>
+        </div>
+        <div class="hint-body">
+          <div class="hint-text" id="evacText">点击下方卡片查看每种搬运方式的详细利弊，了解后再确认选择。</div>
+        </div>
+      </div>
+      <div class="evac-cards" id="evacCards"></div>
+      <div class="evac-detail hidden" id="evacDetail">
+        <div class="evac-detail-header">
+          <span class="edh-icon" id="edhIcon">🛏️</span>
+          <span class="edh-title" id="edhTitle">担架搬运</span>
+        </div>
+        <div class="evac-detail-body">
+          <div class="evac-block">
+            <div class="eb-title blue">📋 适用场景</div>
+            <div class="eb-text" id="edTagline"></div>
+          </div>
+          <div class="evac-block pros">
+            <div class="eb-title green">✓ 优点</div>
+            <ul id="edPros"></ul>
+          </div>
+          <div class="evac-block cons">
+            <div class="eb-title red">✕ 缺点 / 风险</div>
+            <ul id="edCons"></ul>
+          </div>
+          <div class="evac-block">
+            <div class="eb-title">🔧 操作要点</div>
+            <div class="eb-text" id="edUsage"></div>
+          </div>
+          <div class="evac-block" id="edForbiddenBlock" style="display:none;">
+            <div class="eb-title red">⚠ 禁忌</div>
+            <div class="eb-text" id="edForbidden"></div>
+          </div>
+          <button class="evac-confirm-btn" id="evacConfirmBtn" disabled>请先点击上方卡片查看详情</button>
+        </div>
+      </div>
+      <div class="feedback" id="evacFeedback"></div>
+    </div>
+
+    <button class="reset-btn" id="resetBtn">重新开始</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 页面 6：结算页 -->
+<!-- ============================================================ -->
+<div id="resultPage" class="page hidden">
+  <div class="result-card success" id="resultCard">
+    <div class="result-icon" id="resultIcon">🎉</div>
+    <div class="result-title" id="resultTitle">学习完成！</div>
+    <div class="result-text" id="resultText"></div>
+    <div class="result-sub" id="resultSub" style="display:none;"></div>
+    <div class="error-list hidden" id="errorList"></div>
+    <div class="result-btns">
+      <button class="result-btn primary" id="resultBtn1">继续</button>
+      <button class="result-btn secondary" id="resultBtn2">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- 后送动画 -->
+<div class="evac-anim" id="evacAnim">
+  <div class="evac-anim-label">
+    <div class="eal-main" id="evacAnimTitle">担架搬运 · 后送中</div>
+    <div class="eal-sub" id="evacAnimSub"></div>
+  </div>
+  <div class="evac-anim-stage">
+    <div class="evac-anim-ground"></div>
+    <div class="evac-anim-group" id="evacAnimGroup"></div>
+  </div>
+  <div class="evac-anim-hint">EVACUATING · 伤员后送中</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const ENV_POOL = [
+    { envType:'fire_low', envDesc:'敌火力威胁大，周围遮蔽物高度低', correctCarry:'prone' },
+    { envType:'fire_high', envDesc:'敌火力威胁较小，周围有较高遮蔽物', correctCarry:'drag' },
+    { envType:'fire_low', envDesc:'敌火力威胁大，开阔地带无遮蔽', correctCarry:'prone' },
+    { envType:'fire_high', envDesc:'敌火力威胁较小，可利用掩体', correctCarry:'drag' },
+  ];
+
+  const EVAC_OPTIONS = [
+    { id:'stretcher', icon:'🛏️', label:'担架搬运',
+      tagline:'最常用的后送方式，适用于伤情较重、意识不清或无法行走的伤员。',
+      pros:['伤员平卧，体位稳定，对呼吸循环影响最小','适合长距离后送和途中持续监护','可同时转移多名伤员'],
+      cons:['需要2人以上操作，占用人力较多','在狭窄地形或战壕中展开受限','需要专用担架装备'],
+      usage:'两名救护员分别位于伤员两侧，同时弯腰、同时起身，将伤员平托至担架上。伤员取仰卧位，头部略高，膝下可垫软物。',
+      forbidden:'' },
+    { id:'shoulder', icon:'🧑‍🤝‍🧑', label:'掮法',
+      tagline:'单人搬运法，适用于意识清醒、上肢受伤但躯干和下肢完好的伤员。',
+      pros:['单人即可操作，节省人力','转移速度较快','适合短距离快速转移'],
+      cons:['伤员呈俯卧位，不利于呼吸和观察面色','不适用于胸部创伤、颈部创伤和脊柱损伤','对救护员体力要求高'],
+      usage:'救护员蹲在伤员一侧，将伤员上身抬起，使其腹部靠在自己肩上，然后起身扛起。一手抓住伤员同侧手腕，另一手抓住伤员大腿，保持平衡。',
+      forbidden:'意识不清的胸部创伤伤员禁用（俯卧位压迫胸腔）；颈部创伤、脊柱损伤、下肢骨折禁用。' },
+    { id:'back', icon:'🎒', label:'背法',
+      tagline:'单人搬运法，适用于意识清醒、能配合的轻伤员。',
+      pros:['单人即可操作，节省人力','伤员相对舒适','适合有一定距离的转移'],
+      cons:['要求伤员清醒能配合','会压迫伤员背部伤口','不适用于四肢骨折和脊柱损伤'],
+      usage:'救护员背对伤员蹲下，让伤员双臂搭在自己肩上，然后起身背起。',
+      forbidden:'四肢骨折、脊柱损伤、颈部创伤禁用。' },
+    { id:'carry', icon:'🤲', label:'抱法',
+      tagline:'单人搬运法，适用于伤势不重但无法独立行走的伤员。',
+      pros:['伤员体位舒适，便于观察面色','单人即可操作','适合短距离转移'],
+      cons:['对救护员体力要求高','不适用于脊柱损伤和四肢骨折','伤员体重较大时难以维持'],
+      usage:'救护员一手托住伤员背部，另一手托住大腿，将伤员抱起。伤员双臂可环抱救护员颈部。',
+      forbidden:'脊柱损伤、四肢骨折、颈部创伤禁用。' },
+    { id:'truck', icon:'🛻', label:'拉车式',
+      tagline:'双人搬运法，适用于意识不清、无脊柱损伤的伤员。',
+      pros:['两人配合，相对省力','适合中等距离转移','伤员体位较稳定'],
+      cons:['需要2人配合，占用人力','不适用于四肢骨折和脊柱损伤','在狭窄空间难以操作'],
+      usage:'一人抱胸、一人抱腿，两人同时抬起协调前进。',
+      forbidden:'脊柱损伤、四肢骨折、颈部创伤禁用。' },
+    { id:'chair', icon:'🪑', label:'椅托式',
+      tagline:'双人搬运法，适用于意识清醒、无脊柱损伤的伤员。',
+      pros:['两人配合，省力稳定','伤员呈坐位，便于观察','适合中等距离转移'],
+      cons:['需要2人配合，占用人力','不适用于脊柱损伤和四肢骨折','伤员需能坐起配合'],
+      usage:'两名救护员一手托背、一手在大腿下交叉互握形成椅托，伤员双臂搭在两人肩上。',
+      forbidden:'脊柱损伤、四肢骨折、颈部创伤禁用。' }
+  ];
+
+  const EVAC_ANIM = {
+    stretcher: { actors:['🧑‍⚕️','🛏️','🧑‍⚕️'], bobs:[true,false,true], title:'担架搬运 · 后送中', sub:'伤员平卧于担架，两名救护员平稳抬送' },
+    shoulder:  { actors:['🧑‍⚕️','🧍'],           bobs:[true,false],      title:'掮法搬运 · 后送中', sub:'伤员俯卧于肩部，救护员快速转移' },
+    back:      { actors:['🧑‍⚕️','🧍'],           bobs:[true,false],      title:'背法搬运 · 后送中', sub:'伤员环抱救护员颈部，自主配合后送' },
+    carry:     { actors:['🧑‍⚕️','🧍'],           bobs:[true,false],      title:'抱法搬运 · 后送中', sub:'伤员被救护员抱持，短距离后送' },
+    truck:     { actors:['🧑‍⚕️','🧍','🧑‍⚕️'],   bobs:[true,false,true], title:'拉车式搬运 · 后送中', sub:'前后各一名救护员，协调后送' },
+    chair:     { actors:['🧑‍⚕️','🧍','🧑‍⚕️'],   bobs:[true,false,true], title:'椅托式搬运 · 后送中', sub:'两名救护员形成椅托，稳定后送' }
+  };
+
+  const SCENE_META = {
+    abdomen:   { icon:'🫃', name:'腹部肠脱出', desc:'开放性腹部伤口' },
+    chest:     { icon:'🫁', name:'开放性气胸', desc:'胸壁吸吮性伤口' },
+    head:      { icon:'🤕', name:'头部创伤',   desc:'头部裂伤出血' },
+    neck:      { icon:'🦴', name:'颈部创伤',   desc:'颈部血管损伤' },
+    upperArm:  { icon:'💪', name:'大臂骨折',   desc:'上臂闭合性骨折' },
+    forearm:   { icon:'🦾', name:'小臂骨折',   desc:'前臂闭合性骨折' },
+    thigh:     { icon:'🦵', name:'大腿骨折',   desc:'股骨闭合性骨折' },
+    shin:      { icon:'🦶', name:'小腿骨折',   desc:'胫腓骨闭合性骨折' },
+    tourniquet:{ icon:'🩸', name:'止血带使用', desc:'肢体大动脉出血' }
+  };
+
+  const SCENES = {
+    abdomen: {
+      name: '腹部肠脱出',
+      woundPos: { x: 160, y: 210 }, scanRadius: 24,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundAbdomen">
+        <ellipse cx="160" cy="210" rx="34" ry="24" fill="#3d1414" stroke="#da3633" stroke-width="2"/>
+        <ellipse cx="160" cy="210" rx="18" ry="12" fill="#6b1a1a"/>
+        <path d="M148 205 Q152 200 158 204 Q164 200 170 205 Q174 210 170 214 Q164 218 158 214 Q152 218 146 214 Q142 210 148 205Z" fill="#c45a5a" opacity="0.7"/>
+        <text x="160" y="184" text-anchor="middle" fill="#f85149" font-size="13" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">肠管脱出</text>
+      </g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'检伤是救护的第一步。腹部开放性伤口伴肠管脱出非常危险，一旦漏诊会导致感染和失血性休克。<strong>扫描要点</strong>：注意观察腹部有无开放性伤口、肠管是否脱出、有无其他部位合并伤。',
+          foundText:'发现腹部开放性伤口，肠管脱出！',
+          success:'检伤完成：腹部开放性伤口，肠管脱出。禁止回纳肠管。' },
+        { type:'drag', tool:'dressing', icon:'🩹', label:'湿敷料', text:'用大块消毒湿纱布覆盖脱出的肠管，防止污染和干燥',
+          detail:'<strong>为什么用湿敷料</strong>：肠管脱出后失去腹腔保护，干燥会迅速导致肠壁坏死。<strong>操作要点</strong>：用生理盐水浸湿的无菌纱布覆盖，覆盖范围要超出伤口边缘2-3厘米。<span class="warn">禁忌</span>：绝对不能试图将肠管回纳腹腔，会造成严重感染。',
+          visual:`<g filter="url(#clothShadow)"><rect x="128" y="188" width="64" height="44" rx="6" fill="#d0e8d0" stroke="#80b080" stroke-width="1.5" opacity="0.95"/><line x1="136" y1="198" x2="184" y2="198" stroke="#a0c8a0" stroke-width="0.6"/><line x1="136" y1="210" x2="184" y2="210" stroke="#a0c8a0" stroke-width="0.6"/><line x1="136" y1="222" x2="184" y2="222" stroke="#a0c8a0" stroke-width="0.6"/></g>`,
+          success:'无菌湿敷料已覆盖肠管。' },
+        { type:'drag', tool:'ring', icon:'⭕', label:'垫圈', text:'把三角巾按照脱出物大小做成圆圈状套住',
+          detail:'<strong>为什么用垫圈</strong>：直接扣碗会压迫肠管，加重缺血坏死。<strong>操作要点</strong>：将三角巾卷成条状，围成比脱出物稍大的圆圈，套在伤口周围。垫圈起到"围墙"作用，让碗的压力落在垫圈上而非肠管上。',
+          visual:`<g filter="url(#clothShadow)"><ellipse cx="160" cy="210" rx="32" ry="22" fill="none" stroke="url(#bandageGrad)" stroke-width="9" opacity="0.92"/></g>`,
+          success:'三角巾垫圈已套住脱出物。' },
+        { type:'drag', tool:'bowl', icon:'🥣', label:'碗', text:'盖上治疗碗固定，碗边压在垫圈上',
+          detail:'<strong>为什么用碗</strong>：碗提供一个坚固的保护罩，防止肠管受到进一步压迫和污染。<strong>操作要点</strong>：选择比脱出物稍大的干净碗，碗口朝下扣在垫圈上，碗边压在垫圈上而非肠管上。',
+          visual:`<g filter="url(#clothShadow)"><path d="M128 200 Q160 182 192 200 L192 216 Q160 232 128 216 Z" fill="#d0d0d0" stroke="#999" stroke-width="1.5" opacity="0.88"/><ellipse cx="160" cy="200" rx="32" ry="8" fill="#e0e0e0" stroke="#999" stroke-width="1"/></g>`,
+          success:'治疗碗已盖上并固定。' },
+        { type:'drag', tool:'bandage1', icon:'🟠', label:'三角巾①', text:'三角巾折成宽带，将碗固定在腹部，在健侧腋中线打结',
+          detail:'<strong>操作要点</strong>：三角巾折成约10厘米宽的宽带，从碗的下缘绕过腹部，在伤员健侧（未受伤一侧）腋中线水平打结。<span class="warn">注意</span>：打结位置要避开伤口，松紧以能插入一指为宜，过紧会影响呼吸。',
+          visual:`<g filter="url(#clothShadow)"><path d="M114 192 Q140 185 160 186 Q180 185 206 192 L206 198 Q180 191 160 192 Q140 191 114 198Z" fill="url(#bandageGrad)" opacity="0.92"/><path d="M114 195 Q110 210 114 226" stroke="url(#bandageGrad)" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M206 195 Q210 210 206 226" stroke="url(#bandageGrad)" stroke-width="4.5" fill="none" stroke-linecap="round"/><ellipse cx="156" cy="228" rx="7" ry="5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><ellipse cx="163" cy="228" rx="7" ry="5" fill="url(#bandageGradDark)" stroke="#c08020" stroke-width="0.8"/><circle cx="160" cy="228" r="3" fill="#d09020"/><text x="160" y="250" text-anchor="middle" fill="#f0c860" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">腋中线打结</text></g>`,
+          success:'三角巾宽带将碗固定在腹部，健侧腋中线打结。' },
+        { type:'drag', tool:'bandage2', icon:'🟠', label:'三角巾②', text:'腹部兜式包扎：底边置于碗上缘，顶角指向会阴部，两底角在健侧腋中线打结，顶角自会阴部拉向后方打结',
+          detail:'<strong>兜式包扎要领</strong>：三角巾顶角朝下，底边横放于碗的上缘，两底角绕腰在健侧打结；顶角系一小带，从会阴部拉向后方与底角余头打结。<span class="warn">关键</span>：这条三角巾起到"兜住"整个腹部包扎的作用，避免敷料和碗在搬运中滑动。',
+          visual:`<g filter="url(#clothShadow)"><path d="M114 190 Q140 183 160 184 Q180 183 206 190 L206 196 Q180 189 160 190 Q140 189 114 196Z" fill="url(#bandageGrad)" opacity="0.9"/><path d="M160 236 Q162 256 158 272 Q155 284 148 290" stroke="url(#bandageGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M148 290 Q170 293 192 283" stroke="url(#bandageGrad)" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="194" cy="282" rx="6" ry="4.5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><circle cx="196" cy="283" r="2.5" fill="#d09020"/><text x="160" y="306" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">经会阴拉至后方打结</text></g>`,
+          success:'腹部兜式包扎完成。' },
+        { type:'drag', tool:'kneePad', icon:'🦵', label:'膝下垫垫', text:'双膝下垫卷起的衣物，减轻腹部压力',
+          detail:'<strong>为什么垫膝</strong>：仰卧屈膝位可以使腹部肌肉松弛，减轻腹腔内压力，避免肠管进一步脱出。<strong>操作要点</strong>：在双膝下方垫入卷起的衣物或急救包，使膝部抬高15-20厘米，呈屈膝位。',
+          visual:`<g filter="url(#clothShadow)"><ellipse cx="137" cy="370" rx="20" ry="10" fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1"/><ellipse cx="183" cy="370" rx="20" ry="10" fill="#2a2a2a" stroke="#1a1a1a" stroke-width="1"/><text x="160" y="394" text-anchor="middle" fill="#f0c860" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">膝下垫高</text></g>`,
+          success:'双膝下垫高，减轻腹部压力。' },
+        { type:'drag', tool:'kneeTie', icon:'🪢', label:'固定膝部', text:'用三角巾折成带状将两膝绑在一起',
+          detail:'<strong>为什么固定膝部</strong>：避免伤员在搬运过程中双膝滑动，带动腹部肌肉牵拉，加重肠管脱出。<strong>操作要点</strong>：用三角巾折成宽带，从膝下穿过，环绕两膝一圈后在膝外侧打结。',
+          visual:`<g filter="url(#clothShadow)"><path d="M120 340 Q160 334 200 340" stroke="url(#bandageGrad)" stroke-width="4" fill="none"/><path d="M120 348 Q160 342 200 348" stroke="url(#bandageGrad)" stroke-width="4" fill="none"/><ellipse cx="160" cy="344" rx="5" ry="4" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.6"/><text x="160" y="366" text-anchor="middle" fill="#f0c860" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">两膝绑在一起</text></g>`,
+          success:'两膝已绑在一起，膝下垫高。腹部肠脱出处理完成。' }
+      ]
+    },
+    chest: {
+      name: '开放性气胸',
+      woundPos: { x: 130, y: 170 }, scanRadius: 22,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundChest"><ellipse cx="130" cy="170" rx="20" ry="14" fill="#3d1414" stroke="#da3633" stroke-width="2"/><ellipse cx="130" cy="170" rx="8" ry="5" fill="#6b1a1a"/><text x="130" y="146" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">胸壁伤口</text><circle cx="130" cy="158" r="3" fill="#58a6ff" opacity="0.7"><animate attributeName="cy" values="158;140;125" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;0.3;0" dur="1.8s" repeatCount="indefinite"/></circle></g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'开放性气胸的典型征象是胸壁有"吸吮性伤口"——吸气时空气从伤口进入胸腔，呼气时部分气体排出，伴随气泡声。<strong>扫描要点</strong>：注意观察伤口处有无气泡、有无气体进出声音。一旦发现，立即密封。',
+          foundText:'发现胸壁开放性伤口，有气体进出！',
+          success:'检伤完成：胸壁吸吮性伤口，开放性气胸。' },
+        { type:'drag', tool:'seal', icon:'🩹', label:'密封贴', text:'在呼气末用不透气密封贴覆盖伤口',
+          detail:'<strong>为什么在呼气末贴</strong>：呼气末胸腔内气体最少，此时贴密封贴可以让胸腔保持相对低压，减少张力性气胸的发生。<strong>操作要点</strong>：用带排气阀的胸部密封贴，或凡士林纱布、塑料布等不透气材料覆盖。<span class="warn">禁忌</span>：不要将密封贴完全粘死四边，必须留一边排气。',
+          visual:`<g filter="url(#clothShadow)"><rect x="106" y="154" width="48" height="32" rx="4" fill="#f0e8d8" stroke="#b0a890" stroke-width="1.5" opacity="0.95"/></g>`,
+          success:'密封贴已覆盖伤口。' },
+        { type:'drag', tool:'tape', icon:'📎', label:'胶带', text:'仅粘贴三边，保留底边不粘，形成单向活瓣',
+          detail:'<strong>为什么只贴三边</strong>：这是开放性气胸处理的核心。三边密封、一边留空形成一个"单向活瓣"——吸气时胸腔负压把密封贴吸紧，阻止空气进入；呼气时胸腔正压把密封贴推开，允许气体排出。<span class="warn">关键</span>：如果四边都贴死，胸腔内气体会越积越多，形成致命的张力性气胸。',
+          visual:`<g filter="url(#clothShadow)"><rect x="104" y="151" width="52" height="5" rx="1" fill="#d0c8b0" opacity="0.95"/><rect x="104" y="154" width="5" height="32" rx="1" fill="#d0c8b0" opacity="0.95"/><rect x="151" y="154" width="5" height="32" rx="1" fill="#d0c8b0" opacity="0.95"/><path d="M106 184 Q130 180 154 184" stroke="#b0a890" stroke-width="1" fill="none" stroke-dasharray="3,2"/><text x="130" y="204" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">底边留空 · 单向活瓣</text></g>`,
+          success:'胶带三边固定，底边留空形成单向活瓣。' },
+        { type:'drag', tool:'bandage1', icon:'🟠', label:'底边固定', text:'三角巾底边内折1-2厘米，压住敷料，顶角朝上对准伤侧锁骨中线',
+          detail:'<strong>底边内折的作用</strong>：防止三角巾边缘卷入伤口，同时增加底边的强度。<strong>顶角方向</strong>：顶角朝上，对准伤侧锁骨中线，为下一步系带越肩做准备。',
+          visual:`<g filter="url(#clothShadow)"><path d="M106 178 Q130 182 154 178 L154 185 Q130 189 106 185Z" fill="url(#bandageGrad)" opacity="0.9"/><path d="M130 178 L128 150 Q130 144 132 150 L130 178Z" fill="url(#bandageGrad)" opacity="0.85"/><text x="130" y="138" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">对准锁骨中线</text></g>`,
+          success:'三角巾底边压住敷料，顶角朝上对准锁骨中线。' },
+        { type:'drag', tool:'bandage2', icon:'🟠', label:'底角打结', text:'拉紧两底角相遇打结',
+          detail:'<strong>操作要点</strong>：两底角从伤员身体两侧拉紧，在胸前相遇后打平结。松紧度以能固定三角巾但不影响呼吸为宜。<span class="warn">注意</span>：不要打结在伤口正上方，避免压迫伤口。',
+          visual:`<g filter="url(#clothShadow)"><path d="M106 178 Q103 168 106 158" stroke="url(#bandageGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M154 178 Q157 168 154 158" stroke="url(#bandageGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M106 158 Q130 152 154 158 Q152 164 130 166 Q108 164 106 158Z" fill="url(#bandageGrad)" opacity="0.9"/><ellipse cx="126" cy="156" rx="6" ry="4.5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><ellipse cx="131" cy="156" rx="6" ry="4.5" fill="url(#bandageGradDark)" stroke="#c08020" stroke-width="0.8"/><circle cx="128" cy="156" r="2.5" fill="#d09020"/></g>`,
+          success:'两底角相遇打结固定。' },
+        { type:'drag', tool:'bandage3', icon:'🟠', label:'肩部固定', text:'顶角系带越过伤侧肩部，与底边一并打结',
+          detail:'<strong>为什么越过肩部</strong>：开放性气胸包扎必须形成稳固的胸廓包扎，顶角系带越过伤侧肩部可以使整个三角巾服帖，防止滑动。<strong>打结位置</strong>：在肩部上方打结，与底边余头固定在一起。',
+          visual:`<g filter="url(#clothShadow)"><path d="M130 150 Q128 134 132 122 Q138 112 148 107 Q158 102 168 106" stroke="url(#bandageGrad)" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="170" cy="105" rx="6" ry="4.5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><ellipse cx="175" cy="107" rx="6" ry="4.5" fill="url(#bandageGradDark)" stroke="#c08020" stroke-width="0.8"/><circle cx="172" cy="106" r="2.5" fill="#d09020"/><text x="184" y="98" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">肩部打结</text></g>`,
+          success:'顶角系带越过肩部与底边打结。胸背部包扎完成。' },
+        { type:'drag', tool:'monitor', icon:'👁️', label:'监测', text:'持续监测呼吸状况，警惕张力性气胸',
+          detail:'<strong>为什么要监测</strong>：开放性气胸即使包扎正确，仍可能因气体泄漏不畅发展为张力性气胸。<strong>监测要点</strong>：观察呼吸频率是否加快、有无呼吸困难加重、气管是否向健侧偏移、有无颈静脉怒张。<span class="warn">紧急处理</span>：若出现张力性气胸征象，需立即在锁骨中线第2肋间穿刺减压。',
+          visual:`<circle cx="130" cy="170" r="28" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="130" y="208" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">持续监测</text>`,
+          success:'监测中。如呼吸困难加重，需针刺减压。' }
+      ]
+    },
+    head: {
+      name: '头部创伤',
+      woundPos: { x: 160, y: 62 }, scanRadius: 21,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundHead"><path d="M135 60 Q145 48 160 50 Q175 48 185 60 Q180 70 170 68 Q160 72 150 68 Q140 70 135 60Z" fill="#3d1414" stroke="#da3633" stroke-width="2"/><text x="160" y="36" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">头部伤口</text></g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'头部创伤检伤三要素：<strong>意识状态</strong>（呼唤、刺痛有无反应）、<strong>瞳孔</strong>（是否等大等圆、对光反射是否灵敏）、<strong>出血情况</strong>。意识清醒、瞳孔等大提示伤情相对稳定；意识模糊或瞳孔不等大提示颅脑损伤，需紧急后送。',
+          foundText:'发现头部裂伤，出血明显！',
+          success:'检伤完成：头部裂伤，意识清醒，瞳孔等大。' },
+        { type:'drag', tool:'airway', icon:'🫁', label:'通畅气道', text:'清除口内异物，保持呼吸道通畅',
+          detail:'<strong>为什么优先处理气道</strong>：头部创伤伤员常伴呕吐，呕吐物误吸是导致窒息的主要原因。<strong>操作要点</strong>：将伤员头偏向一侧，用手指或吸引器清除口内异物、血块和呕吐物，保持侧卧或俯卧位，防止误吸。',
+          visual:`<text x="160" y="118" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">口内异物已清除</text>`,
+          success:'口内异物已清除，保持侧卧姿势防止误吸。' },
+        { type:'drag', tool:'gauze', icon:'🩹', label:'纱布', text:'用无菌纱布直接压迫止血',
+          detail:'<strong>为什么直接压迫</strong>：头部血管丰富，出血量大，直接压迫是最快的止血方法。<strong>操作要点</strong>：用无菌纱布覆盖伤口，用手掌持续压迫5-10分钟，不要频繁松开查看。<span class="warn">禁忌</span>：如怀疑颅骨骨折，不要用力按压，避免骨片刺入脑组织。',
+          visual:`<g filter="url(#clothShadow)"><rect x="138" y="50" width="44" height="30" rx="5" fill="url(#gauzeGrad)" stroke="#b0a890" stroke-width="1.5" opacity="0.95"/></g>`,
+          success:'纱布已覆盖，持续压迫止血。' },
+        { type:'drag', tool:'bandage1', icon:'🟠', label:'底边反折', text:'三角巾底边反折1-2横指宽，置于眉弓上缘，顶角垂于枕后',
+          detail:'<strong>为什么底边反折</strong>：反折后的底边更厚实，能更好地贴合前额，同时避免边缘卷起。<strong>位置</strong>：底边置于眉弓上缘（齐眉处），顶角自然垂于枕后。',
+          visual:`<g filter="url(#clothShadow)"><path d="M118 50 Q140 42 160 41 Q180 42 202 50 L202 60 Q180 52 160 51 Q140 52 118 60Z" fill="url(#bandageGrad)" opacity="0.95"/><path d="M160 60 Q162 52 160 44 Q158 52 160 60Z" fill="url(#bandageGrad)" opacity="0.75"/><path d="M160 44 Q158 36 162 30 Q164 36 162 42" stroke="url(#bandageGrad)" stroke-width="2" fill="none" opacity="0.6"/></g>`,
+          success:'三角巾底边反折置于前额眉弓上缘，顶角垂于枕后。' },
+        { type:'drag', tool:'bandage2', icon:'🟠', label:'枕后交叉', text:'拉紧底边，经双侧耳上于枕后交叉，压住顶角',
+          detail:'<strong>操作要点</strong>：两底角分别经双侧耳上方拉向枕后，在枕后交叉，交叉点压住垂下的顶角。这一步是帽式包扎的关键，交叉要拉紧，避免三角巾滑脱。',
+          visual:`<g filter="url(#clothShadow)"><path d="M118 56 Q114 68 120 80 Q124 86 130 84" stroke="url(#bandageGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M202 56 Q206 68 200 80 Q196 86 190 84" stroke="url(#bandageGrad)" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M124 84 Q140 90 160 88 Q180 90 196 84 Q192 92 160 94 Q128 92 124 84Z" fill="url(#bandageGrad)" opacity="0.85"/></g>`,
+          success:'两底角经耳上至枕后交叉，压住顶角。' },
+        { type:'drag', tool:'bandage3', icon:'🟠', label:'额部打结', text:'两底角绕回前额齐眉打平结，顶角拉紧折叠后掖入枕后交叉处内',
+          detail:'<strong>打平结</strong>：两底角从枕后绕回前额，在齐眉处打平结（两个简单的反结）。<strong>顶角处理</strong>：将枕后垂下的顶角拉紧、向上折叠，掖入枕后交叉处的三角巾下面，不要外露。',
+          visual:`<g filter="url(#clothShadow)"><path d="M130 84 Q126 74 132 66" stroke="url(#bandageGrad)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M190 84 Q194 74 188 66" stroke="url(#bandageGrad)" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="157" cy="56" rx="7" ry="5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><ellipse cx="163" cy="56" rx="7" ry="5" fill="url(#bandageGradDark)" stroke="#c08020" stroke-width="0.8"/><circle cx="160" cy="56" r="3" fill="#d09020"/></g>`,
+          success:'前额平结完成，顶角掖入枕后交叉处。帽式包扎完成。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'复查', text:'复查意识、瞳孔和生命体征',
+          detail:'<strong>为什么要复查</strong>：头部创伤可能持续进展，即使初步处理正确，也需要再次评估。<strong>复查内容</strong>：意识状态是否变化、瞳孔是否等大等圆、呼吸脉搏是否平稳。<span class="warn">警示</span>：若出现意识恶化、瞳孔不等大、剧烈头痛呕吐，提示颅内出血加重，需紧急后送。',
+          visual:`<circle cx="160" cy="78" r="42" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/>`,
+          success:'意识清醒，瞳孔等大等圆，对光反射灵敏。' }
+      ]
+    },
+    neck: {
+      name: '颈部创伤',
+      woundPos: { x: 160, y: 116 }, scanRadius: 20,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundNeck">
+        <ellipse cx="160" cy="116" rx="14" ry="10" fill="#3d1414" stroke="#da3633" stroke-width="2"/>
+        <ellipse cx="160" cy="116" rx="5" ry="3" fill="#6b1a1a"/>
+        <text x="160" y="92" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">颈部伤口</text>
+      </g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'颈部创伤危险在于可能伤及大血管（颈总动脉、颈内静脉）和气管。检伤时要同时判断：<strong>出血情况</strong>（是否喷射状）、<strong>气道通畅性</strong>（有无窒息征象）、<strong>有无颈椎损伤</strong>（头颈部是否畸形）。',
+          foundText:'发现颈部裂伤，出血明显！',
+          success:'检伤完成：颈部裂伤，出血明显，气道通畅。' },
+        { type:'drag', tool:'airway', icon:'🫁', label:'通畅气道', text:'清除口内异物，保持呼吸道通畅，头偏向一侧',
+          detail:'<strong>为什么优先处理气道</strong>：颈部创伤可能导致气管受压或血液误吸。<strong>操作要点</strong>：清除口内血块、异物，将伤员头偏向伤侧，防止血液误吸。<span class="warn">注意</span>：如怀疑颈椎损伤，头颈部保持中立位，不要随意扭动。',
+          visual:`<text x="160" y="84" text-anchor="middle" fill="#58a6ff" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">气道已通畅</text>`,
+          success:'口内异物已清除，气道通畅。' },
+        { type:'drag', tool:'gauze', icon:'🩹', label:'纱布', text:'用无菌纱布直接压迫颈部伤口止血',
+          detail:'<strong>操作要点</strong>：用无菌纱布直接压迫出血点。<span class="warn">禁忌一</span>：不要同时按压双侧颈动脉，会导致脑缺血；<span class="warn">禁忌二</span>：不要环形包扎颈部，会压迫气管造成窒息。',
+          visual:`<g filter="url(#clothShadow)"><rect x="148" y="106" width="24" height="20" rx="4" fill="url(#gauzeGrad)" stroke="#b0a890" stroke-width="1.5" opacity="0.95"/></g>`,
+          success:'纱布已覆盖，持续压迫止血。' },
+        { type:'drag', tool:'bandage1', icon:'🟠', label:'三角巾包扎', text:'三角巾折成宽带，撕开一端从伤侧肩部斜向对侧腋下，压迫固定敷料',
+          detail:'<strong>为什么斜向包扎</strong>：颈部不能环形包扎，必须斜向健侧腋下，避免压迫气管和健侧血管。<strong>操作要点</strong>：三角巾折成宽带（约5-8厘米宽），一端从伤侧肩部上方开始，斜行绕过颈部前方，至对侧腋下打结。<span class="warn">关键</span>：包扎必须保持气管通畅，伤员能正常呼吸。',
+          visual:`<g filter="url(#clothShadow)"><path d="M148 116 Q130 130 120 160 Q115 180 120 200" stroke="url(#bandageGrad)" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.9"/><path d="M172 116 Q180 130 185 155" stroke="url(#bandageGrad)" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.85"/><ellipse cx="122" cy="200" rx="6" ry="4.5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><circle cx="122" cy="200" r="2.5" fill="#d09020"/><text x="100" y="218" text-anchor="middle" fill="#f0c860" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">腋下打结</text></g>`,
+          success:'三角巾斜行包扎完成，健侧腋下打结。' },
+        { type:'drag', tool:'collar', icon:'🦴', label:'颈托固定', text:'如怀疑颈椎损伤，佩戴颈托固定颈部',
+          detail:'<strong>为什么要颈托</strong>：颈部创伤常伴颈椎损伤，搬运时颈椎移位可导致高位截瘫甚至死亡。<strong>操作要点</strong>：一人固定头颈中立位，另一人从后方套入颈托，调整高度至下颌与胸骨之间，前后片扣合。<span class="warn">禁忌</span>：不可随意扭动或牵引伤员颈部。',
+          visual:`<g filter="url(#clothShadow)"><path d="M142 100 Q140 96 145 94 L175 94 Q180 96 178 100 L180 132 Q180 138 175 138 L145 138 Q140 138 140 132 Z" fill="#e8e0d0" stroke="#b0a890" stroke-width="1.5" opacity="0.92"/><path d="M145 100 L175 100" stroke="#a09070" stroke-width="0.8"/><path d="M145 132 L175 132" stroke="#a09070" stroke-width="0.8"/><text x="160" y="120" text-anchor="middle" fill="#666" font-size="7">颈托</text></g>`,
+          success:'颈托已佩戴，颈椎固定。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'复查', text:'复查呼吸、意识、出血情况',
+          detail:'<strong>复查要点</strong>：观察呼吸是否平稳、意识是否清醒、纱布是否渗血。<span class="warn">警示</span>：如出现呼吸困难加重、意识模糊，提示气道受压或大出血，需立即处理并紧急后送。',
+          visual:`<circle cx="160" cy="116" r="30" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/>`,
+          success:'呼吸平稳，意识清醒，出血已控制。' }
+      ]
+    },
+    upperArm: {
+      name: '大臂骨折',
+      woundPos: { x: 77, y: 162 }, scanRadius: 20,
+      evacCorrect: 'shoulder',
+      wound: `<g id="woundUpperArm">
+        <ellipse cx="77" cy="162" rx="14" ry="20" fill="#3d1414" stroke="#da3633" stroke-width="1.5" opacity="0.5"/>
+        <text x="42" y="160" text-anchor="middle" fill="#f85149" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">大臂骨折</text>
+      </g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'大臂骨折的典型征象：<strong>肿胀</strong>、<strong>畸形</strong>、<strong>异常活动</strong>、<strong>骨擦感</strong>。可能伴有桡神经损伤，表现为手腕下垂。',
+          foundText:'发现左上臂肿胀、畸形，异常活动！',
+          success:'检伤完成：左大臂闭合性骨折。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'查血运', text:'检查桡动脉搏动、手指温度和感觉',
+          detail:'<strong>为什么固定前要查血运</strong>：作为基线对照。固定后再查一次，如果血运变差，说明固定过紧或骨折端压迫血管，需要调整。<strong>检查内容</strong>：桡动脉搏动、手指颜色、温度、活动能力。',
+          visual:`<circle cx="77" cy="230" r="18" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="77" y="258" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">桡动脉可触及</text>`,
+          success:'桡动脉搏动可触及，手指温暖。' },
+        { type:'drag', tool:'pad1', icon:'🟫', label:'垫肩部', text:'在肩部骨突处垫软垫',
+          detail:'<strong>为什么垫软垫</strong>：肩部骨突皮下组织薄，夹板直接压迫会导致压疮和神经损伤。',
+          visual:`<ellipse cx="77" cy="146" rx="8" ry="5" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/>`,
+          success:'肩部软垫已放置。' },
+        { type:'drag', tool:'pad2', icon:'🟫', label:'垫肘部', text:'在肘部骨突处垫软垫',
+          detail:'肘部尺骨鹰嘴突出，需要垫软垫避免夹板压迫。',
+          visual:`<ellipse cx="77" cy="182" rx="8" ry="5" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/>`,
+          success:'肘部软垫已放置。' },
+        { type:'drag', tool:'splintOut', icon:'🪵', label:'外侧夹板', text:'放置外侧夹板，从肩部到肘部（超过上下关节）',
+          detail:'<strong>长度要求</strong>：夹板上端到肩关节，下端超过肘关节。<strong>为什么超过关节</strong>：如果不固定肘关节，肘部活动会带动骨折端移位。',
+          visual:`<rect x="50" y="138" width="9" height="54" rx="3" fill="#c4a060" stroke="#a08040" stroke-width="1.2"/><line x1="50" y1="140" x2="59" y2="140" stroke="#a08040" stroke-width="1.5"/><line x1="50" y1="190" x2="59" y2="190" stroke="#a08040" stroke-width="1.5"/>`,
+          success:'外侧夹板已放置，超过肩、肘两个关节。' },
+        { type:'drag', tool:'bandage', icon:'🟠', label:'绷带', text:'用绷带从远端向近端多圈缠绕固定夹板',
+          detail:'<strong>缠绕要点</strong>：从肘部向肩部方向缠绕，每圈覆盖上一圈的一半。松紧度以能插入一指为宜。',
+          visual:`<g filter="url(#clothShadow)"><path d="M48 152 Q77 148 106 152" stroke="url(#bandageGrad)" stroke-width="4" fill="none" opacity="0.9"/><path d="M48 166 Q77 162 106 166" stroke="url(#bandageGrad)" stroke-width="4" fill="none" opacity="0.9"/><path d="M48 182 Q77 178 106 182" stroke="url(#bandageGrad)" stroke-width="4" fill="none" opacity="0.9"/></g>`,
+          success:'绷带固定完成。' },
+        { type:'drag', tool:'check2', icon:'👁️', label:'复查', text:'再次检查远端血运',
+          detail:'固定后必须再次检查桡动脉搏动、手指颜色和温度。如搏动减弱或消失，说明固定过紧。',
+          visual:`<circle cx="77" cy="230" r="18" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="77" y="258" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">血运正常</text>`,
+          success:'桡动脉搏动可触及，血运正常。' },
+        { type:'drag', tool:'sling1', icon:'🟠', label:'悬臂带', text:'三角巾悬臂带将前臂固定于胸前，健侧肩上打结',
+          detail:'<strong>为什么悬臂带</strong>：大臂骨折固定后，需要用悬臂带托住前臂，减轻骨折端的牵拉，防止搬运中二次损伤。<strong>操作要点</strong>：三角巾底边一端过健侧肩，另一端托住患肢前臂，在健侧肩部打结。',
+          visual:`<g filter="url(#clothShadow)"><path d="M77 200 Q100 178 140 175 Q165 178 178 200 Q182 218 175 240 Q160 262 130 264 Q100 262 82 240 Q75 218 77 200Z" fill="url(#bandageGrad)" opacity="0.85"/><path d="M82 200 Q110 188 140 190" stroke="#a07010" stroke-width="0.5" fill="none" opacity="0.5"/><path d="M172 200 Q150 188 120 190" stroke="#a07010" stroke-width="0.5" fill="none" opacity="0.5"/><path d="M82 240 Q120 252 172 240" stroke="#a07010" stroke-width="0.5" fill="none" opacity="0.5"/><ellipse cx="230" cy="146" rx="6" ry="4.5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><ellipse cx="236" cy="150" rx="6" ry="4.5" fill="url(#bandageGradDark)" stroke="#c08020" stroke-width="0.8"/><circle cx="233" cy="148" r="2.5" fill="#d09020"/><text x="250" y="140" text-anchor="middle" fill="#f0c860" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">健侧肩打结</text></g>`,
+          success:'三角巾悬臂带完成，前臂固定于胸前。' }
+      ]
+    },
+    forearm: {
+      name: '小臂骨折',
+      woundPos: { x: 77, y: 200 }, scanRadius: 18,
+      evacCorrect: 'shoulder',
+      wound: `<g id="woundForearm">
+        <ellipse cx="77" cy="200" rx="12" ry="16" fill="#3d1414" stroke="#da3633" stroke-width="1.5" opacity="0.5"/>
+        <text x="42" y="198" text-anchor="middle" fill="#f85149" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">小臂骨折</text>
+      </g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'小臂骨折的典型征象：肿胀、畸形、异常活动、骨擦感。小臂有尺骨和桡骨两根，位置表浅，容易触及。',
+          foundText:'发现左小臂肿胀、畸形，异常活动！',
+          success:'检伤完成：左小臂闭合性骨折。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'查血运', text:'检查桡动脉搏动、手指温度和感觉',
+          detail:'固定前检查桡动脉搏动，作为基线对照。同时检查手指的感觉和活动，判断有无神经损伤。',
+          visual:`<circle cx="77" cy="230" r="18" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="77" y="258" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">桡动脉可触及</text>`,
+          success:'桡动脉搏动可触及，手指温暖。' },
+        { type:'drag', tool:'pad1', icon:'🟫', label:'垫肘部', text:'在肘部骨突处垫软垫',
+          detail:'肘部尺骨鹰嘴突出，需要垫软垫避免夹板压迫。',
+          visual:`<ellipse cx="77" cy="188" rx="8" ry="5" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/>`,
+          success:'肘部软垫已放置。' },
+        { type:'drag', tool:'pad2', icon:'🟫', label:'垫腕部', text:'在腕部骨突处垫软垫',
+          detail:'腕部尺骨茎突和桡骨茎突突出，需要垫软垫避免夹板压迫。',
+          visual:`<ellipse cx="77" cy="218" rx="8" ry="5" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/>`,
+          success:'腕部软垫已放置。' },
+        { type:'drag', tool:'splintOut', icon:'🪵', label:'外侧夹板', text:'放置外侧夹板，从肘部到腕部（超过上下关节）',
+          detail:'<strong>长度要求</strong>：夹板上端超过肘关节，下端超过腕关节。<strong>为什么超过关节</strong>：只有超过上下关节才能完全限制骨折端活动。',
+          visual:`<rect x="50" y="182" width="9" height="44" rx="3" fill="#c4a060" stroke="#a08040" stroke-width="1.2"/><line x1="50" y1="184" x2="59" y2="184" stroke="#a08040" stroke-width="1.5"/><line x1="50" y1="224" x2="59" y2="224" stroke="#a08040" stroke-width="1.5"/>`,
+          success:'外侧夹板已放置，超过肘、腕两个关节。' },
+        { type:'drag', tool:'bandage', icon:'🟠', label:'绷带', text:'用绷带从远端向近端多圈缠绕固定夹板',
+          detail:'<strong>缠绕要点</strong>：从腕部向肘部方向缠绕，每圈覆盖上一圈的一半。松紧度以绷带能上下移动1厘米为宜。',
+          visual:`<g filter="url(#clothShadow)"><path d="M48 190 Q77 186 106 190" stroke="url(#bandageGrad)" stroke-width="4" fill="none" opacity="0.9"/><path d="M48 204 Q77 200 106 204" stroke="url(#bandageGrad)" stroke-width="4" fill="none" opacity="0.9"/><path d="M48 218 Q77 214 106 218" stroke="url(#bandageGrad)" stroke-width="4" fill="none" opacity="0.9"/></g>`,
+          success:'绷带固定完成。' },
+        { type:'drag', tool:'check2', icon:'👁️', label:'复查', text:'再次检查远端血运',
+          detail:'固定后必须再次检查桡动脉搏动、手指颜色和温度。如搏动减弱或消失，说明固定过紧。',
+          visual:`<circle cx="77" cy="230" r="18" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="77" y="258" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">血运正常</text>`,
+          success:'桡动脉搏动可触及，血运正常。' },
+        { type:'drag', tool:'sling1', icon:'🟠', label:'悬臂带', text:'三角巾悬臂带将前臂固定于胸前，健侧肩上打结',
+          detail:'<strong>为什么悬臂带</strong>：小臂骨折后需要用悬臂带托住前臂，使肘关节屈曲90度，减轻骨折端牵拉。',
+          visual:`<g filter="url(#clothShadow)"><path d="M77 200 Q100 178 140 175 Q165 178 178 200 Q182 218 175 240 Q160 262 130 264 Q100 262 82 240 Q75 218 77 200Z" fill="url(#bandageGrad)" opacity="0.85"/><path d="M82 200 Q110 188 140 190" stroke="#a07010" stroke-width="0.5" fill="none" opacity="0.5"/><path d="M172 200 Q150 188 120 190" stroke="#a07010" stroke-width="0.5" fill="none" opacity="0.5"/><path d="M82 240 Q120 252 172 240" stroke="#a07010" stroke-width="0.5" fill="none" opacity="0.5"/><ellipse cx="230" cy="146" rx="6" ry="4.5" fill="url(#bandageGrad)" stroke="#c08020" stroke-width="0.8"/><ellipse cx="236" cy="150" rx="6" ry="4.5" fill="url(#bandageGradDark)" stroke="#c08020" stroke-width="0.8"/><circle cx="233" cy="148" r="2.5" fill="#d09020"/><text x="250" y="140" text-anchor="middle" fill="#f0c860" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">健侧肩打结</text></g>`,
+          success:'悬臂带完成，前臂固定于胸前。' }
+      ]
+    },
+    thigh: {
+      name: '大腿骨折',
+      woundPos: { x: 183, y: 290 }, scanRadius: 22,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundThigh"><ellipse cx="183" cy="290" rx="20" ry="14" fill="#3d1414" stroke="#da3633" stroke-width="1.5" opacity="0.5"/><text x="183" y="264" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">大腿骨折</text></g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'大腿骨折典型征象：<strong>肿胀</strong>、<strong>畸形</strong>、<strong>异常活动</strong>、<strong>骨擦感</strong>。<span class="warn">禁忌</span>：不要试图复位骨折。',
+          foundText:'发现右大腿肿胀、畸形，异常活动！',
+          success:'检伤完成：右大腿闭合性骨折。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'查血运', text:'检查足背动脉搏动、皮肤温度和感觉',
+          detail:'<strong>为什么固定前要查血运</strong>：作为基线对照。固定后再查一次，如果血运变差，说明固定过紧。',
+          visual:`<circle cx="183" cy="362" r="30" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="183" y="396" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">足背动脉搏动可触及</text>`,
+          success:'足背动脉搏动可触及。' },
+        { type:'drag', tool:'pad1', icon:'🟫', label:'垫髋部', text:'在髋部骨突处垫软垫',
+          detail:'<strong>为什么垫软垫</strong>：骨突处皮下组织薄，夹板直接压迫会导致压疮和神经损伤。',
+          visual:`<ellipse cx="183" cy="272" rx="10" ry="6" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/><text x="183" y="260" text-anchor="middle" fill="#f0c860" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">软垫</text>`,
+          success:'髋部软垫已放置。' },
+        { type:'drag', tool:'pad2', icon:'🟫', label:'垫膝部', text:'在膝部骨突处垫软垫',
+          detail:'大腿骨折需固定髋、膝、踝三个关节。膝部软垫要垫在关节内外两侧，避免压迫腓总神经。',
+          visual:`<ellipse cx="183" cy="316" rx="10" ry="6" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/><text x="183" y="304" text-anchor="middle" fill="#f0c860" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">软垫</text>`,
+          success:'膝部软垫已放置。' },
+        { type:'drag', tool:'splintOut', icon:'🪵', label:'外侧夹板', text:'放置外侧长夹板，从髋部到踝部（超过上下关节）',
+          detail:'<strong>长度要求</strong>：上端到髋关节，下端到踝部，必须超过骨折部位的上下两个关节。',
+          visual:`<rect x="216" y="268" width="10" height="96" rx="3" fill="#c4a060" stroke="#a08040" stroke-width="1.2"/><line x1="216" y1="270" x2="226" y2="270" stroke="#a08040" stroke-width="1.5"/><line x1="216" y1="362" x2="226" y2="362" stroke="#a08040" stroke-width="1.5"/><text x="242" y="316" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round" transform="rotate(90 242 316)">外侧夹板</text>`,
+          success:'外侧夹板已放置。' },
+        { type:'drag', tool:'splintIn', icon:'🪵', label:'内侧夹板', text:'放置内侧夹板，从腹股沟到踝部',
+          detail:'<strong>内侧夹板的作用</strong>：与外侧夹板形成"夹板三明治"。',
+          visual:`<rect x="140" y="276" width="10" height="88" rx="3" fill="#c4a060" stroke="#a08040" stroke-width="1.2"/><text x="122" y="316" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round" transform="rotate(-90 122 316)">内侧夹板</text>`,
+          success:'内侧夹板已放置。' },
+        { type:'drag', tool:'bandage', icon:'🟠', label:'绷带', text:'用绷带从远端向近端多圈缠绕固定夹板',
+          detail:'<strong>为什么从远端向近端</strong>：促进静脉回流，减少肢体肿胀。<strong>缠绕要点</strong>：每圈覆盖上一圈的1/2-2/3。',
+          visual:`<g filter="url(#clothShadow)"><path d="M138 280 Q183 274 228 280" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 295 Q183 289 228 295" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 310 Q183 304 228 310" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 325 Q183 319 228 325" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 340 Q183 334 228 340" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 355 Q183 349 228 355" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/></g>`,
+          success:'绷带固定完成。' },
+        { type:'drag', tool:'check2', icon:'👁️', label:'复查', text:'再次检查远端血运',
+          detail:'<strong>为什么固定后要复查</strong>：固定过程可能压迫血管。如发现足背动脉搏动消失、皮肤苍白发凉，说明固定过紧，必须立即松开。',
+          visual:`<circle cx="183" cy="362" r="30" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="183" y="396" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">血运正常</text>`,
+          success:'血运正常，固定有效。' }
+      ]
+    },
+    shin: {
+      name: '小腿骨折',
+      woundPos: { x: 183, y: 340 }, scanRadius: 21,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundShin"><ellipse cx="183" cy="340" rx="18" ry="12" fill="#3d1414" stroke="#da3633" stroke-width="1.5" opacity="0.5"/><text x="183" y="316" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">小腿骨折</text></g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'小腿骨折典型征象与大腿类似。胫骨在前内侧位置表浅，容易发生开放性骨折。',
+          foundText:'发现右小腿肿胀、畸形，异常活动！',
+          success:'检伤完成：右小腿闭合性骨折。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'查血运', text:'检查足背动脉搏动、皮肤温度和感觉',
+          detail:'小腿骨折容易压迫胫前动脉和胫后动脉，导致足部缺血。',
+          visual:`<circle cx="183" cy="362" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="183" y="396" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">足背动脉搏动可触及</text>`,
+          success:'足背动脉搏动可触及。' },
+        { type:'drag', tool:'pad1', icon:'🟫', label:'垫膝部', text:'在膝部骨突处垫软垫',
+          detail:'小腿骨折固定范围需覆盖膝关节和踝关节。膝部软垫放在腓骨头处，避免腓总神经受压。',
+          visual:`<ellipse cx="183" cy="310" rx="10" ry="6" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/><text x="183" y="298" text-anchor="middle" fill="#f0c860" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">软垫</text>`,
+          success:'膝部软垫已放置。' },
+        { type:'drag', tool:'pad2', icon:'🟫', label:'垫踝部', text:'在踝部骨突处垫软垫',
+          detail:'踝部骨突明显，内踝和外踝都容易受压。',
+          visual:`<ellipse cx="183" cy="358" rx="10" ry="6" fill="#d0c0a0" stroke="#a09070" stroke-width="1"/><text x="183" y="374" text-anchor="middle" fill="#f0c860" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">软垫</text>`,
+          success:'踝部软垫已放置。' },
+        { type:'drag', tool:'splintOut', icon:'🪵', label:'外侧夹板', text:'放置外侧夹板，从膝上到踝下（超过上下关节）',
+          detail:'<strong>长度要求</strong>：上端超过膝关节至少10厘米，下端超过踝关节。',
+          visual:`<rect x="216" y="300" width="10" height="72" rx="3" fill="#c4a060" stroke="#a08040" stroke-width="1.2"/><line x1="216" y1="302" x2="226" y2="302" stroke="#a08040" stroke-width="1.5"/><line x1="216" y1="370" x2="226" y2="370" stroke="#a08040" stroke-width="1.5"/><text x="242" y="336" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round" transform="rotate(90 242 336)">外侧夹板</text>`,
+          success:'外侧夹板已放置。' },
+        { type:'drag', tool:'splintIn', icon:'🪵', label:'内侧夹板', text:'放置内侧夹板，从膝上到踝下',
+          detail:'内侧夹板放在小腿内侧，注意避开胫骨前缘。',
+          visual:`<rect x="140" y="300" width="10" height="72" rx="3" fill="#c4a060" stroke="#a08040" stroke-width="1.2"/><text x="122" y="336" text-anchor="middle" fill="#f0c860" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round" transform="rotate(-90 122 336)">内侧夹板</text>`,
+          success:'内侧夹板已放置。' },
+        { type:'drag', tool:'bandage', icon:'🟠', label:'绷带', text:'用绷带从远端向近端多圈缠绕固定夹板',
+          detail:'<strong>缠绕要点</strong>：从踝部向膝部方向缠绕，每圈覆盖上一圈的一半。<span class="warn">警示</span>：如出现足趾发紫、发凉、麻木，立即松开。',
+          visual:`<g filter="url(#clothShadow)"><path d="M138 306 Q183 300 228 306" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 320 Q183 314 228 320" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 334 Q183 328 228 334" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 348 Q183 342 228 348" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/><path d="M138 362 Q183 356 228 362" stroke="url(#bandageGrad)" stroke-width="5" fill="none" opacity="0.9"/></g>`,
+          success:'绷带固定完成。' },
+        { type:'drag', tool:'check2', icon:'👁️', label:'复查', text:'再次检查远端血运',
+          detail:'固定后必须再次检查足背动脉搏动、足趾颜色和温度。如搏动减弱或消失，说明固定过紧。',
+          visual:`<circle cx="183" cy="362" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="183" y="396" text-anchor="middle" fill="#3fb950" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">血运正常</text>`,
+          success:'血运正常，固定有效。' }
+      ]
+    },
+    tourniquet: {
+      name: '止血带使用',
+      woundPos: { x: 137, y: 290 }, scanRadius: 24,
+      evacCorrect: 'stretcher',
+      wound: `<g id="woundTourniquet">
+        <ellipse cx="137" cy="290" rx="18" ry="14" fill="#3d1414" stroke="#da3633" stroke-width="2"/>
+        <ellipse cx="137" cy="290" rx="7" ry="5" fill="#8b1a1a"/>
+        <circle cx="137" cy="290" r="4" fill="#da3633" opacity="0.8">
+          <animate attributeName="r" values="4;6;4" dur="1.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="137" y="262" text-anchor="middle" fill="#f85149" font-size="11" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">喷射状出血</text>
+      </g>`,
+      steps: [
+        { type:'scan', icon:'🔍', label:'检伤', text:'按住手指在伤员身上滑动，扫描受伤部位',
+          detail:'肢体大出血的识别：<strong>喷射状出血</strong>（动脉出血）、<strong>持续涌出</strong>（静脉出血）、<strong>肢体离断</strong>。一旦发现喷射状出血或加压包扎无效，应立即使用止血带。',
+          foundText:'发现左大腿喷射状出血，加压包扎无效！',
+          success:'检伤完成：左大腿严重动脉出血，需使用止血带。' },
+        { type:'drag', tool:'gauze', icon:'🩹', label:'纱布', text:'用无菌纱布直接压迫出血点',
+          detail:'<strong>为什么先压迫</strong>：止血带是最后手段，先尝试直接压迫。<strong>操作要点</strong>：用无菌纱布直接压在出血点上，持续压迫5-10分钟。<span class="warn">注意</span>：如果压迫无效或为喷射状出血，立即使用止血带。',
+          visual:`<g filter="url(#clothShadow)"><rect x="126" y="282" width="22" height="16" rx="3" fill="url(#gauzeGrad)" stroke="#b0a890" stroke-width="1.5" opacity="0.95"/></g>`,
+          success:'纱布已覆盖，但出血未停止。需立即使用止血带。' },
+        { type:'drag', tool:'tourniquet', icon:'🩸', label:'止血带', text:'将旋压式止血带置于出血部位近心端5-7厘米处',
+          detail:'<strong>放置位置</strong>：紧邻出血部位上方（近心端）5-7厘米，或四肢近心端（大腿中上段）。<span class="warn">禁忌</span>：不要放在关节处，不要在伤口上直接放置。<strong>为什么</strong>：放在关节处压力无法有效传导；放在伤口上会加重损伤。',
+          visual:`<g filter="url(#clothShadow)"><rect x="118" y="272" width="38" height="10" rx="2" fill="#2a2a2a" stroke="#111" stroke-width="1"/><rect x="118" y="272" width="38" height="3" rx="1" fill="#3a3a3a"/><text x="137" y="262" text-anchor="middle" fill="#f0c860" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">近心端5-7cm</text></g>`,
+          success:'止血带已放置于出血部位近心端。' },
+        { type:'drag', tool:'tighten', icon:'🔄', label:'收紧', text:'收紧止血带至出血停止，固定旋压杆',
+          detail:'<strong>收紧标准</strong>：收紧到出血停止为止。收紧后动脉搏动应消失，伤口不再出血。<span class="warn">警示</span>：过松会导致静脉回流受阻，反而加重出血。',
+          visual:`<g filter="url(#clothShadow)"><rect x="118" y="272" width="38" height="10" rx="2" fill="#2a2a2a" stroke="#111" stroke-width="1"/><rect x="118" y="272" width="38" height="3" rx="1" fill="#3a3a3a"/><circle cx="156" cy="277" r="6" fill="#3a3a3a" stroke="#111" stroke-width="1"/><line x1="150" y1="277" x2="162" y2="277" stroke="#666" stroke-width="1.5"/><circle cx="137" cy="290" r="5" fill="#8b1a1a" opacity="0.4"/><text x="168" y="262" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">出血已停止</text></g>`,
+          success:'止血带已收紧，出血停止。固定旋压杆。' },
+        { type:'drag', tool:'markT', icon:'⏱️', label:'标记时间', text:'在伤员额头或止血带上标记"T"和使用时间（精确到分钟）',
+          detail:'<strong>为什么要标记</strong>：止血带使用时间超过2小时会导致肢体坏死，后送途中必须持续记录并交接。<strong>操作要点</strong>：用记号笔在伤员额头或止血带上写明"T"和具体时间，格式如"T 14:30"（T代表Tourniquet，14:30为时间）。<span class="warn">关键</span>：后送交接时必须口头说明止血带使用时间。',
+          visual:`<g filter="url(#clothShadow)"><rect x="118" y="272" width="38" height="10" rx="2" fill="#2a2a2a" stroke="#111" stroke-width="1"/><rect x="118" y="272" width="38" height="3" rx="1" fill="#3a3a3a"/><circle cx="156" cy="277" r="6" fill="#3a3a3a" stroke="#111" stroke-width="1"/><line x1="150" y1="277" x2="162" y2="277" stroke="#666" stroke-width="1.5"/><text x="160" y="60" text-anchor="middle" fill="#f85149" font-size="14" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">T</text><text x="160" y="74" text-anchor="middle" fill="#f85149" font-size="8" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="2.5" stroke-linejoin="round">14:30</text></g>`,
+          success:'止血带使用时间已记录，额头标记"T 14:30"。' },
+        { type:'drag', tool:'check', icon:'👁️', label:'复查', text:'复查出血是否完全停止，观察远端血运',
+          detail:'<strong>复查要点</strong>：伤口是否继续出血、止血带是否牢固、远端肢体颜色。<span class="warn">警示</span>：一旦使用止血带，不要随意松开，必须尽快后送。后送交接时说明止血带使用时间。',
+          visual:`<circle cx="137" cy="290" r="24" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.8"/><text x="137" y="336" text-anchor="middle" fill="#3fb950" font-size="10" font-weight="bold" paint-order="stroke" stroke="#0a0e14" stroke-width="3" stroke-linejoin="round">出血已完全停止</text>`,
+          success:'出血已完全停止，止血带有效。' }
+      ]
+    }
+  };
+
+  // ============ 状态 ============
+  let currentScene = 'abdomen';
+  let currentMode = 'learn';
+  let testType = 'specialty';
+  let isRandomMode = false;
+  let randomSceneRevealed = false;
+  let currentStep = 0;
+  let errors = [];
+  let sceneCompleted = false;
+  let isScanning = false;
+  let isPointerDown = false;
+  let transferDone = false;
+  let selectedCarry = null;
+  let usedTools = [];
+  let currentEnv = null;
+  let currentStage = 'transfer';
+
+  const $ = id => document.getElementById(id);
+  const homePage = $('homePage');
+  const learnScenePage = $('learnScenePage');
+  const testModePage = $('testModePage');
+  const testScenePage = $('testScenePage');
+  const gamePage = $('gamePage');
+  const resultPage = $('resultPage');
+
+  const transferStage = $('transferStage');
+  const treatStage = $('treatStage');
+  const evacStage = $('evacStage');
+  const battlefield = $('battlefield');
+  const casualtyDraggable = $('casualtyDraggable');
+  const carrySelect = $('carrySelect');
+  const transferText = $('transferText');
+  const transferFeedback = $('transferFeedback');
+  const casualtyArea = $('casualtyArea');
+  const casualtySvg = $('casualtySvg');
+  const toolbar = $('toolbar');
+  const toolbarScroll = $('toolbarScroll');
+  const toolCards = $('toolCards');
+  const toolDetail = $('toolDetail');
+  const tdhIcon = $('tdhIcon');
+  const tdhTitle = $('tdhTitle');
+  const tdUsage = $('tdUsage');
+  const tdDetail = $('tdDetail');
+  const tdDetailBlock = $('tdDetailBlock');
+  const stepHint = $('stepHint');
+  const hintNum = $('hintNum');
+  const hintTitle = $('hintTitle');
+  const hintSub = $('hintSub');
+  const hintText = $('hintText');
+  const hintDetail = $('hintDetail');
+  const hintDetailText = $('hintDetailText');
+  const feedback = $('feedback');
+  const progressBar = $('progressBar');
+  const testStats = $('testStats');
+  const resetBtn = $('resetBtn');
+  const woundLayer = $('woundLayer');
+  const toolLayer = $('toolLayer');
+  const magnifier = $('magnifier');
+  const evacCards = $('evacCards');
+  const evacDetail = $('evacDetail');
+  const edhIcon = $('edhIcon');
+  const edhTitle = $('edhTitle');
+  const edTagline = $('edTagline');
+  const edPros = $('edPros');
+  const edCons = $('edCons');
+  const edUsage = $('edUsage');
+  const edForbiddenBlock = $('edForbiddenBlock');
+  const edForbidden = $('edForbidden');
+  const evacFeedback = $('evacFeedback');
+  const evacText = $('evacText');
+  const stageBar = $('stageBar');
+  const treatGuide = $('treatGuide');
+  const treatGuideText = $('treatGuideText');
+  const gameSceneLabel = $('gameSceneLabel');
+
+  // ============ 页面切换 ============
+  function showPage(pageEl) {
+    [homePage, learnScenePage, testModePage, testScenePage, gamePage, resultPage].forEach(p => p.classList.add('hidden'));
+    pageEl.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // ============ 伤情列表渲染 ============
+  function renderSceneList(container, onClickFn) {
+    container.innerHTML = Object.keys(SCENES).map(key => {
+      const meta = SCENE_META[key] || { icon:'🩺', name:SCENES[key].name, desc:'' };
+      return `<div class="scene-item" data-scene="${key}">
+        <div class="si-icon">${meta.icon}</div>
+        <div class="si-name">${meta.name}</div>
+        <div class="si-desc">${meta.desc}</div>
+      </div>`;
+    }).join('');
+    container.querySelectorAll('.scene-item').forEach(item => {
+      item.addEventListener('click', () => onClickFn(item.dataset.scene));
+    });
+  }
+
+  // ============ 首页按钮 ============
+  $('homeLearnBtn').addEventListener('click', () => {
+    renderSceneList($('learnSceneList'), startLearn);
+    showPage(learnScenePage);
+  });
+
+  $('homeTestBtn').addEventListener('click', () => {
+    showPage(testModePage);
+  });
+
+  $('learnBackBtn').addEventListener('click', () => {
+    showPage(homePage);
+  });
+
+  $('testModeBackBtn').addEventListener('click', () => {
+    showPage(homePage);
+  });
+
+  $('testSpecialtyBtn').addEventListener('click', () => {
+    testType = 'specialty';
+    renderSceneList($('testSceneList'), startSpecialtyTest);
+    showPage(testScenePage);
+  });
+
+  $('testRandomBtn').addEventListener('click', () => {
+    testType = 'random';
+    startRandomTest();
+  });
+
+  $('testSceneBackBtn').addEventListener('click', () => {
+    showPage(testModePage);
+  });
+
+  // ============ 开始游戏 ============
+  function startLearn(sceneKey) {
+    currentScene = sceneKey;
+    currentMode = 'learn';
+    isRandomMode = false;
+    randomSceneRevealed = false;
+    showPage(gamePage);
+    initScene();
+    updateGameSceneLabel();
+  }
+
+  function startSpecialtyTest(sceneKey) {
+    currentScene = sceneKey;
+    currentMode = 'test';
+    isRandomMode = false;
+    randomSceneRevealed = false;
+    showPage(gamePage);
+    initScene();
+    updateGameSceneLabel();
+  }
+
+  function startRandomTest() {
+    const keys = Object.keys(SCENES);
+    currentScene = keys[Math.floor(Math.random() * keys.length)];
+    currentMode = 'test';
+    isRandomMode = true;
+    randomSceneRevealed = false;
+    showPage(gamePage);
+    initScene();
+    updateGameSceneLabel();
+  }
+
+  function updateGameSceneLabel() {
+    if (isRandomMode && !randomSceneRevealed) {
+      gameSceneLabel.innerHTML = '伤情：<strong>未知（需检伤确认）</strong>';
+      gameSceneLabel.classList.add('unknown');
+    } else {
+      const meta = SCENE_META[currentScene];
+      const sceneName = meta ? meta.name : SCENES[currentScene].name;
+      gameSceneLabel.innerHTML = `伤情：<strong>${sceneName}</strong>`;
+      gameSceneLabel.classList.remove('unknown');
+    }
+  }
+
+  // ============ 游戏页返回 ============
+  $('gameBackBtn').addEventListener('click', () => {
+    if (currentMode === 'learn') {
+      renderSceneList($('learnSceneList'), startLearn);
+      showPage(learnScenePage);
+    } else {
+      if (isRandomMode) {
+        showPage(testModePage);
+      } else {
+        renderSceneList($('testSceneList'), startSpecialtyTest);
+        showPage(testScenePage);
+      }
+    }
+  });
+
+  // ============ 更新阶段条 ============
+  function updateStageBar(stage) {
+    currentStage = stage;
+    stageBar.querySelectorAll('.stage-dot').forEach(d => {
+      d.classList.remove('active', 'done');
+      const s = d.dataset.stage;
+      if (s === stage) d.classList.add('active');
+      else if ((stage === 'treat' && s === 'transfer') || (stage === 'evac' && (s === 'transfer' || s === 'treat'))) d.classList.add('done');
+    });
+  }
+
+  function updateTreatGuide() {
+    const scene = SCENES[currentScene];
+    const step = scene.steps[currentStep];
+    if (!step) return;
+    treatGuide.className = 'guide-tip';
+    if (step.type === 'scan') {
+      treatGuide.classList.add('scan-tip');
+      treatGuideText.innerHTML = '按住手指或鼠标，在伤员身上<strong>缓慢滑动</strong>扫描伤口';
+    } else {
+      treatGuide.classList.add('treat-tip');
+      if (currentMode === 'test') {
+        treatGuideText.innerHTML = '点击下方卡片查看详情，<strong>确认选择</strong>正确的器材或操作';
+      } else {
+        treatGuideText.innerHTML = '从下方器材栏<strong>拖动正确器材</strong>到伤员身上';
+      }
+    }
+  }
+
+  // ============ 初始化场景 ============
+  function initScene() {
+    currentStep = 0; errors = []; sceneCompleted = false; isScanning = false; isPointerDown = false;
+    transferDone = false; selectedCarry = null; usedTools = []; currentEnv = pickRandomEnv();
+    magnifier.classList.remove('show');
+
+    transferStage.classList.remove('hidden');
+    treatStage.classList.add('hidden');
+    evacStage.classList.add('hidden');
+    woundLayer.innerHTML = ''; toolLayer.innerHTML = '';
+
+    transferFeedback.className = 'feedback'; transferFeedback.textContent = '';
+    feedback.className = 'feedback'; feedback.textContent = '';
+    evacFeedback.className = 'feedback'; evacFeedback.textContent = '';
+
+    casualtyDraggable.style.left = '30px';
+    casualtyDraggable.style.top = '130px';
+    casualtyDraggable.classList.remove('dragging');
+
+    initTransfer();
+    updateStageBar('transfer');
+    updateTreatGuide();
+
+    const scene = SCENES[currentScene];
+    progressBar.innerHTML = scene.steps.map((_, i) => `<div class="progress-dot${i === 0 ? ' current' : ''}"></div>`).join('');
+    if (currentMode === 'test') { testStats.className = 'test-stats show'; updateTestStats(); }
+    else testStats.className = 'test-stats';
+    updateGameSceneLabel();
+  }
+
+  function pickRandomEnv() { return ENV_POOL[Math.floor(Math.random() * ENV_POOL.length)]; }
+
+  // ============ 火线转移 ============
+  function initTransfer() {
+    const t = currentEnv;
+    transferText.textContent = `战场环境：${t.envDesc}。请选择搬运方式，然后拖拽伤员到安全区。`;
+    const options = [
+      { id:'prone', icon:'🛡️', label:'侧身匍匐法' },
+      { id:'drag', icon:'🪢', label:'拖拽搬运' },
+      { id:'stretcher', icon:'🛏️', label:'担架搬运' }
+    ];
+    carrySelect.innerHTML = options.map(o => `<div class="carry-btn" data-carry="${o.id}"><span>${o.icon}</span><span>${o.label}</span></div>`).join('');
+    carrySelect.querySelectorAll('.carry-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (transferDone) return;
+        carrySelect.querySelectorAll('.carry-btn').forEach(b => b.classList.remove('correct', 'wrong', 'selected'));
+        btn.classList.add('selected');
+        selectedCarry = btn.dataset.carry;
+        const label = btn.querySelector('span:last-child').textContent;
+        transferText.textContent = `✓ 已选择「${label}」。现在按住伤员，将其拖拽到右侧安全区。`;
+        transferFeedback.className = 'feedback';
+        transferFeedback.textContent = '';
+      });
+    });
+  }
+
+  function getCarryTip(carryId) {
+    const tips = {
+      prone: '侧身匍匐法：伤口侧朝上，避免与地面接触。',
+      drag: '拖拽搬运：抓握战术背心或使用拖拽带，快速转移。',
+      stretcher: '担架搬运：适用于病情较重或无法行走的伤员。'
+    };
+    return tips[carryId] || '';
+  }
+
+  let casualtyDrag = null;
+  casualtyDraggable.addEventListener('pointerdown', (e) => {
+    if (transferDone) return;
+    if (selectedCarry === null) {
+      transferFeedback.className = 'feedback error';
+      transferFeedback.textContent = '❌ 请先选择搬运方式，再拖拽伤员。';
+      return;
+    }
+    e.preventDefault(); e.stopPropagation();
+    casualtyDraggable.setPointerCapture(e.pointerId);
+    const rect = casualtyDraggable.getBoundingClientRect();
+    const parentRect = battlefield.getBoundingClientRect();
+    casualtyDrag = {
+      pointerId: e.pointerId,
+      offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top,
+      parentLeft: parentRect.left, parentTop: parentRect.top,
+      parentWidth: parentRect.width, parentHeight: parentRect.height,
+      elWidth: rect.width, elHeight: rect.height
+    };
+    casualtyDraggable.classList.add('dragging');
+  });
+
+  casualtyDraggable.addEventListener('pointermove', (e) => {
+    if (!casualtyDrag || e.pointerId !== casualtyDrag.pointerId) return;
+    e.preventDefault(); e.stopPropagation();
+    let newLeft = e.clientX - casualtyDrag.parentLeft - casualtyDrag.offsetX;
+    let newTop = e.clientY - casualtyDrag.parentTop - casualtyDrag.offsetY;
+    newLeft = Math.max(2, Math.min(newLeft, casualtyDrag.parentWidth - casualtyDrag.elWidth - 2));
+    newTop = Math.max(2, Math.min(newTop, casualtyDrag.parentHeight - casualtyDrag.elHeight - 2));
+    casualtyDraggable.style.left = newLeft + 'px';
+    casualtyDraggable.style.top = newTop + 'px';
+  });
+
+  casualtyDraggable.addEventListener('pointerup', (e) => {
+    if (!casualtyDrag || e.pointerId !== casualtyDrag.pointerId) return;
+    casualtyDraggable.classList.remove('dragging');
+    const elRect = casualtyDraggable.getBoundingClientRect();
+    const safeRect = battlefield.querySelector('.safe-zone').getBoundingClientRect();
+    const centerX = elRect.left + elRect.width / 2;
+    if (centerX >= safeRect.left) {
+      const t = currentEnv;
+      const isCorrect = (selectedCarry === t.correctCarry);
+      const options = [
+        { id:'prone', label:'侧身匍匐法' },
+        { id:'drag', label:'拖拽搬运' },
+        { id:'stretcher', label:'担架搬运' }
+      ];
+      const correctLabel = options.find(o => o.id === t.correctCarry).label;
+      const selectedLabel = options.find(o => o.id === selectedCarry).label;
+      const selectedBtn = carrySelect.querySelector(`[data-carry="${selectedCarry}"]`);
+
+      if (isCorrect) {
+        if (selectedBtn) {
+          selectedBtn.classList.remove('selected');
+          selectedBtn.classList.add('correct');
+        }
+        transferDone = true;
+        transferFeedback.className = 'feedback success';
+        transferFeedback.textContent = `✓ 搬运方式正确！${getCarryTip(selectedCarry)} 进入检伤环节。`;
+        transferText.textContent = '✓ 伤员已转移至安全区！';
+        setTimeout(() => {
+          transferStage.classList.add('hidden');
+          treatStage.classList.remove('hidden');
+          updateStageBar('treat');
+          startTreatStage();
+        }, 1500);
+      } else {
+        if (selectedBtn) {
+          selectedBtn.classList.remove('selected');
+          selectedBtn.classList.add('wrong');
+        }
+        transferFeedback.className = 'feedback error';
+        transferFeedback.textContent = `❌ 到达安全区后发现「${selectedLabel}」不适合当前环境。正确应为「${correctLabel}」。伤员将回到原位，请重新选择。`;
+        transferText.textContent = '❌ 搬运方式错误，请重新选择。';
+
+        if (currentMode === 'test') {
+          if (!errors.find(e => e.step === '转移')) {
+            errors.push({ step: '火线转移', usedTool: selectedLabel, correctTool: correctLabel });
+            updateTestStats();
+          }
+        }
+
+        setTimeout(() => {
+          casualtyDraggable.style.left = '30px';
+          casualtyDraggable.style.top = '130px';
+          selectedCarry = null;
+          carrySelect.querySelectorAll('.carry-btn').forEach(b => b.classList.remove('correct', 'wrong', 'selected'));
+          transferText.textContent = `战场环境：${currentEnv.envDesc}。请重新选择搬运方式。`;
+          setTimeout(() => { transferFeedback.className = 'feedback'; transferFeedback.textContent = ''; }, 2000);
+        }, 1500);
+      }
+    }
+    casualtyDrag = null;
+  });
+
+  casualtyDraggable.addEventListener('pointercancel', (e) => {
+    if (casualtyDrag && e.pointerId === casualtyDrag.pointerId) {
+      casualtyDraggable.classList.remove('dragging');
+      casualtyDrag = null;
+    }
+  });
+
+  // ============ 检伤救护 ============
+  function startTreatStage() {
+    const scene = SCENES[currentScene];
+    renderTreatUI(scene);
+    updateTreatGuide();
+    if (scene.steps[0].type === 'scan') startScanMode();
+  }
+
+  function renderTreatUI(scene) {
+    if (currentMode === 'learn') {
+      toolbarScroll.classList.remove('hidden');
+      toolCards.classList.add('hidden');
+      toolDetail.classList.add('hidden');
+      renderToolbar(scene);
+    } else {
+      toolbarScroll.classList.add('hidden');
+      toolCards.classList.remove('hidden');
+      renderToolCards(scene);
+    }
+    renderStepHint(scene);
+  }
+
+  function renderToolbar(scene) {
+    const step = scene.steps[currentStep];
+    if (step.type === 'scan') {
+      toolbar.innerHTML = `<div class="tool-item" style="border-color:#d29922;pointer-events:none;"><span class="icon">🔍</span><span>按住滑动扫描</span></div>`;
+      return;
+    }
+    let dragSteps = scene.steps.filter(s => s.type === 'drag');
+    toolbar.innerHTML = dragSteps.map(s => {
+      const actualIndex = scene.steps.indexOf(s);
+      const isDisabled = actualIndex !== currentStep;
+      return `<div class="tool-item${isDisabled ? ' disabled' : ''}" data-tool="${s.tool}" data-index="${actualIndex}">
+        <span class="icon">${s.icon}</span><span>${s.label}</span>
+      </div>`;
+    }).join('');
+    toolbar.querySelectorAll('.tool-item:not(.disabled)').forEach(el => makeDraggable(el));
+  }
+
+  function renderToolCards(scene) {
+    const step = scene.steps[currentStep];
+    if (step.type === 'scan') {
+      toolCards.innerHTML = '';
+      toolDetail.classList.add('hidden');
+      return;
+    }
+    let remaining = scene.steps.filter(s => s.type === 'drag' && !usedTools.includes(s.tool));
+    remaining = remaining.slice().sort(() => Math.random() - 0.5);
+    toolCards.innerHTML = remaining.map(s => {
+      const actualIndex = scene.steps.indexOf(s);
+      return `<div class="tool-card" data-tool="${s.tool}" data-index="${actualIndex}">
+        <span class="tc-icon">${s.icon}</span>
+        <span class="tc-label">${s.label}</span>
+      </div>`;
+    }).join('');
+    toolCards.querySelectorAll('.tool-card').forEach(card => {
+      card.addEventListener('click', () => {
+        if (sceneCompleted) return;
+        const idx = parseInt(card.dataset.index);
+        toolCards.querySelectorAll('.tool-card').forEach(c => c.classList.remove('viewing'));
+        card.classList.add('viewing');
+        renderToolDetail(idx);
+      });
+    });
+    toolDetail.classList.add('hidden');
+  }
+
+  function renderToolDetail(idx) {
+    const scene = SCENES[currentScene];
+    const step = scene.steps[idx];
+    if (!step) return;
+    toolDetail.classList.remove('hidden');
+    tdhIcon.textContent = step.icon;
+    tdhTitle.textContent = step.label;
+    tdUsage.textContent = step.text;
+    if (step.detail) { tdDetailBlock.style.display = 'block'; tdDetail.innerHTML = step.detail; }
+    else { tdDetailBlock.style.display = 'none'; }
+    const btn = document.getElementById('toolConfirmBtn');
+    btn.disabled = false;
+    btn.textContent = `确认使用「${step.label}」`;
+    btn.onclick = function() { confirmTool(idx); };
+  }
+
+  function confirmTool(idx) {
+    const scene = SCENES[currentScene];
+    const step = scene.steps[currentStep];
+    const selectedStep = scene.steps[idx];
+    const card = toolCards.querySelector(`[data-index="${idx}"]`);
+    if (idx === currentStep) {
+      if (selectedStep.visual) {
+        const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        temp.innerHTML = selectedStep.visual;
+        while (temp.firstChild) toolLayer.appendChild(temp.firstChild);
+      }
+      feedback.className = 'feedback success';
+      feedback.textContent = '✅ ' + selectedStep.success;
+      usedTools.push(selectedStep.tool);
+      const dots = progressBar.querySelectorAll('.progress-dot');
+      if (dots[currentStep]) { dots[currentStep].classList.remove('current'); dots[currentStep].classList.add('done'); }
+      currentStep++;
+      toolDetail.classList.add('hidden');
+      if (currentStep >= scene.steps.length) {
+        sceneCompleted = true;
+        feedback.className = 'feedback success';
+        feedback.textContent = '🎉 现场救护完成，准备进入后送阶段。';
+        if (currentMode === 'test') {
+          let html = `<div>现场救护完成 · 错误次数：${errors.length}</div>`;
+          if (errors.length === 0) html += `<div style="color:#3fb950;margin-top:5px;">✓ 完美！无错误步骤。</div>`;
+          else errors.forEach(e => { html += `<div class="err-item">❌ ${e.step}：错误选择了「${e.usedTool}」</div>`; });
+          testStats.innerHTML = html;
+        }
+        setTimeout(() => {
+          treatStage.classList.add('hidden');
+          evacStage.classList.remove('hidden');
+          updateStageBar('evac');
+          initEvac();
+        }, 1200);
+        return;
+      }
+      if (scene.steps[currentStep].type === 'scan') {
+        renderTreatUI(scene); updateTreatGuide(); startScanMode(); updateTestStats();
+        return;
+      }
+      renderTreatUI(scene); updateTreatGuide(); updateTestStats();
+    } else {
+      if (card) card.classList.add('wrong');
+      feedback.className = 'feedback error';
+      feedback.textContent = `❌ 顺序不正确。请重新判断当前最应该做的操作。`;
+      // 记录错误：包含步骤名、错误选择、正确选择
+      const stepLabel = step.type === 'scan' ? '检伤扫描' : step.label;
+      if (!errors.find(e => e.step === stepLabel)) {
+        errors.push({ step: stepLabel, usedTool: selectedStep.label, correctTool: step.label });
+      }
+      updateTestStats();
+      setTimeout(() => { if (card) card.classList.remove('wrong'); }, 1200);
+    }
+  }
+
+  function renderStepHint(scene) {
+    const step = scene.steps[currentStep];
+    if (currentMode !== 'learn') {
+      stepHint.classList.remove('show');
+      stepHint.classList.remove('scan-mode');
+      return;
+    }
+    stepHint.classList.add('show');
+    stepHint.classList.toggle('scan-mode', step.type === 'scan');
+    hintNum.textContent = step.type === 'scan' ? '🔍' : (currentStep + 1);
+    hintTitle.textContent = step.type === 'scan' ? '检伤扫描' : step.label;
+    hintSub.textContent = `步骤 ${currentStep + 1} / ${scene.steps.length}`;
+    hintText.textContent = step.text;
+    if (step.detail) { hintDetail.style.display = 'block'; hintDetailText.innerHTML = step.detail; }
+    else { hintDetail.style.display = 'none'; }
+  }
+
+  function updateTestStats() {
+    if (currentMode !== 'test') return;
+    let html = `<div>测试模式 · 第 ${Math.min(currentStep + 1, SCENES[currentScene].steps.length)} / ${SCENES[currentScene].steps.length} 步</div>`;
+    if (errors.length > 0) {
+      html += `<div style="margin-top:5px;color:#8b949e;">错误记录：</div>`;
+      errors.forEach(e => { html += `<div class="err-item">❌ ${e.step}：选择了「${e.usedTool}」</div>`; });
+    } else {
+      html += `<div style="margin-top:3px;color:#3fb950;">✓ 目前无错误</div>`;
+    }
+    testStats.innerHTML = html;
+  }
+
+  function startScanMode() { isScanning = true; magnifier.classList.add('show'); }
+  function stopScanMode() { isScanning = false; magnifier.classList.remove('show'); }
+
+  casualtyArea.addEventListener('pointerdown', (e) => {
+    if (!isScanning || sceneCompleted) return;
+    isPointerDown = true; updateMagnifier(e);
+  });
+  casualtyArea.addEventListener('pointermove', (e) => {
+    if (!isScanning || !isPointerDown || sceneCompleted) return;
+    updateMagnifier(e);
+  });
+  casualtyArea.addEventListener('pointerup', () => {
+    isPointerDown = false;
+    if (isScanning) magnifier.classList.remove('show');
+  });
+  casualtyArea.addEventListener('pointercancel', () => {
+    isPointerDown = false;
+    if (isScanning) magnifier.classList.remove('show');
+  });
+  casualtyArea.addEventListener('pointerleave', () => {
+    if (isScanning) magnifier.classList.remove('show');
+  });
+
+  function updateMagnifier(e) {
+    let svgX, svgY;
+    try {
+      const pt = casualtySvg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      const svgP = pt.matrixTransform(casualtySvg.getScreenCTM().inverse());
+      svgX = svgP.x; svgY = svgP.y;
+    } catch (err) {
+      const rect = casualtySvg.getBoundingClientRect();
+      svgX = (e.clientX - rect.left) / rect.width * 320;
+      svgY = (e.clientY - rect.top) / rect.height * 400;
+    }
+    const areaRect = casualtyArea.getBoundingClientRect();
+    magnifier.classList.add('show');
+    magnifier.style.left = (e.clientX - areaRect.left) + 'px';
+    magnifier.style.top = (e.clientY - areaRect.top) + 'px';
+    const scene = SCENES[currentScene];
+    const dist = Math.hypot(svgX - scene.woundPos.x, svgY - scene.woundPos.y);
+    if (dist < scene.scanRadius) foundWound();
+  }
+
+  function foundWound() {
+    const scene = SCENES[currentScene];
+    const step = scene.steps[currentStep];
+    if (step.type !== 'scan') return;
+    stopScanMode(); isPointerDown = false;
+    woundLayer.innerHTML = scene.wound;
+    feedback.className = 'feedback success';
+    feedback.textContent = '✅ ' + step.foundText;
+    const dots = progressBar.querySelectorAll('.progress-dot');
+    if (dots[currentStep]) { dots[currentStep].classList.remove('current'); dots[currentStep].classList.add('done'); }
+    currentStep++;
+
+    if (isRandomMode && !randomSceneRevealed) {
+      randomSceneRevealed = true;
+      updateGameSceneLabel();
+      setTimeout(() => {
+        feedback.className = 'feedback success';
+        feedback.textContent = `🎯 检伤完成，确认伤情为「${scene.name}」。请按规范开展救护。`;
+      }, 1500);
+    }
+
+    setTimeout(() => {
+      if (currentStep < scene.steps.length) {
+        renderTreatUI(scene); updateTreatGuide();
+        if (currentMode === 'test') updateTestStats();
+      }
+    }, 800);
+  }
+
+  // ============ 器材栏滚动 ============
+  let isScrollDragging = false, scrollStartX = 0, scrollStartLeft = 0;
+  toolbarScroll.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.tool-item')) return;
+    isScrollDragging = true; scrollStartX = e.clientX; scrollStartLeft = toolbarScroll.scrollLeft;
+    toolbarScroll.style.cursor = 'grabbing';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!isScrollDragging) return;
+    toolbarScroll.scrollLeft = scrollStartLeft - (e.clientX - scrollStartX);
+  });
+  document.addEventListener('mouseup', () => { isScrollDragging = false; toolbarScroll.style.cursor = 'grab'; });
+  toolbarScroll.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); toolbarScroll.scrollLeft += e.deltaY; }
+  }, { passive: false });
+
+  let dragState = null;
+  function makeDraggable(el) {
+    el.addEventListener('pointerdown', (e) => {
+      if (sceneCompleted) return;
+      e.preventDefault(); e.stopPropagation();
+      el.setPointerCapture(e.pointerId);
+      const rect = el.getBoundingClientRect();
+      dragState = { el, pointerId: e.pointerId, offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top, ghost: el.cloneNode(true) };
+      Object.assign(dragState.ghost.style, {
+        position:'fixed', left:rect.left+'px', top:rect.top+'px',
+        width:rect.width+'px', height:rect.height+'px',
+        pointerEvents:'none', opacity:'0.9', transform:'scale(1.15)', zIndex:1000, borderColor:'#1f6feb'
+      });
+      document.body.appendChild(dragState.ghost);
+      el.style.opacity = '0.3';
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!dragState || dragState.el !== el || e.pointerId !== dragState.pointerId) return;
+      dragState.ghost.style.left = (e.clientX - dragState.offsetX) + 'px';
+      dragState.ghost.style.top = (e.clientY - dragState.offsetY) + 'px';
+    });
+    el.addEventListener('pointerup', (e) => {
+      if (!dragState || dragState.el !== el || e.pointerId !== dragState.pointerId) return;
+      el.style.opacity = '';
+      if (dragState.ghost) dragState.ghost.remove();
+      const areaRect = casualtyArea.getBoundingClientRect();
+      if (e.clientX >= areaRect.left && e.clientX <= areaRect.right && e.clientY >= areaRect.top && e.clientY <= areaRect.bottom) {
+        handleDrop(el.dataset.tool);
+      }
+      dragState = null;
+    });
+    el.addEventListener('pointercancel', (e) => {
+      if (dragState && e.pointerId === dragState.pointerId) {
+        if (dragState.ghost) dragState.ghost.remove();
+        dragState.el.style.opacity = '';
+        dragState = null;
+      }
+    });
+  }
+
+  function handleDrop(tool) {
+    const scene = SCENES[currentScene];
+    const step = scene.steps[currentStep];
+    if (tool === step.tool) {
+      if (step.visual) {
+        const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        temp.innerHTML = step.visual;
+        while (temp.firstChild) toolLayer.appendChild(temp.firstChild);
+      }
+      feedback.className = 'feedback success';
+      feedback.textContent = '✅ ' + step.success;
+      const dots = progressBar.querySelectorAll('.progress-dot');
+      if (dots[currentStep]) { dots[currentStep].classList.remove('current'); dots[currentStep].classList.add('done'); }
+      currentStep++;
+      if (currentStep >= scene.steps.length) {
+        sceneCompleted = true;
+        feedback.className = 'feedback success';
+        feedback.textContent = '🎉 现场救护完成，准备进入后送阶段。';
+        setTimeout(() => {
+          treatStage.classList.add('hidden');
+          evacStage.classList.remove('hidden');
+          updateStageBar('evac');
+          initEvac();
+        }, 1200);
+        return;
+      }
+      if (scene.steps[currentStep].type === 'scan') {
+        renderTreatUI(scene); updateTreatGuide(); startScanMode(); return;
+      }
+      renderTreatUI(scene); updateTreatGuide();
+    } else {
+      const usedLabel = toolbar.querySelector(`[data-tool="${tool}"]`)?.querySelector('span:last-child')?.textContent || tool;
+      feedback.className = 'feedback error';
+      feedback.textContent = `❌ 当前步骤应使用「${step.label}」，而不是「${usedLabel}」。`;
+    }
+  }
+
+  // ============ 后送 ============
+  function initEvac() {
+    const scene = SCENES[currentScene];
+    evacText.textContent = '点击下方卡片查看每种搬运方式的详细利弊，了解后再确认选择。';
+    let available = EVAC_OPTIONS.slice();
+    if (currentMode === 'learn') {
+      if (currentScene === 'upperArm' || currentScene === 'forearm') {
+        available = available.filter(o => o.id === 'shoulder' || o.id === 'stretcher');
+      } else if (currentScene === 'chest') {
+        available = available.filter(o => o.id === 'stretcher');
+      } else {
+        available = available.filter(o => o.id === 'stretcher');
+      }
+    }
+    evacCards.innerHTML = available.map(o =>
+      `<div class="evac-card" data-evac="${o.id}">
+        <span class="ec-icon">${o.icon}</span>
+        <span class="ec-label">${o.label}</span>
+        <span class="ec-tag">${o.tagline.substring(0, 20)}...</span>
+      </div>`
+    ).join('');
+    evacCards.querySelectorAll('.evac-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.evac;
+        evacCards.querySelectorAll('.evac-card').forEach(c => c.classList.remove('viewing'));
+        card.classList.add('viewing');
+        renderEvacDetail(id);
+      });
+    });
+    evacDetail.classList.add('hidden');
+    evacFeedback.className = 'feedback';
+    evacFeedback.textContent = '';
+  }
+
+  function renderEvacDetail(id) {
+    const opt = EVAC_OPTIONS.find(o => o.id === id);
+    if (!opt) return;
+    evacDetail.classList.remove('hidden');
+    edhIcon.textContent = opt.icon;
+    edhTitle.textContent = opt.label;
+    edTagline.textContent = opt.tagline;
+    edPros.innerHTML = opt.pros.map(p => `<li>${p}</li>`).join('');
+    edCons.innerHTML = opt.cons.map(c => `<li>${c}</li>`).join('');
+    edUsage.textContent = opt.usage;
+    if (opt.forbidden) { edForbiddenBlock.style.display = 'block'; edForbidden.textContent = opt.forbidden; }
+    else { edForbiddenBlock.style.display = 'none'; }
+    const btn = document.getElementById('evacConfirmBtn');
+    const scene = SCENES[currentScene];
+    const isWrongInLearn = currentMode === 'learn' && id !== scene.evacCorrect;
+    btn.disabled = isWrongInLearn;
+    btn.textContent = isWrongInLearn ? '教学模式 · 仅可查看了解' : `确认选择「${opt.label}」`;
+    btn.onclick = isWrongInLearn ? null : function() { confirmEvac(id); };
+  }
+
+  function confirmEvac(id) {
+    const scene = SCENES[currentScene];
+    const opt = EVAC_OPTIONS.find(o => o.id === id);
+    const btn = document.getElementById('evacConfirmBtn');
+    const card = evacCards.querySelector(`[data-evac="${id}"]`);
+    if (id === scene.evacCorrect) {
+      if (card) card.classList.add('correct');
+      evacFeedback.className = 'feedback success';
+      evacFeedback.textContent = `✅ 后送搬运方式正确！${opt.label} 已确认，伤员已安排后送。`;
+      evacText.textContent = '✅ 后送方案确认，全流程完成！';
+      if (btn) { btn.disabled = true; btn.textContent = '已确认 ✓'; btn.onclick = null; }
+      setTimeout(() => {
+        playEvacAnim(id, () => {
+          showResultPage();
+        });
+      }, 600);
+    } else {
+      if (card) card.classList.add('wrong');
+      const correctOpt = EVAC_OPTIONS.find(o => o.id === scene.evacCorrect);
+      evacFeedback.className = 'feedback error';
+      evacFeedback.textContent = `❌ 「${opt.label}」不适合该伤情的后送。正确应为「${correctOpt.label}」。`;
+      if (currentMode === 'test') {
+        if (!errors.find(e => e.step === '后送')) {
+          errors.push({ step: '后送搬运', usedTool: opt.label, correctTool: correctOpt.label });
+          updateTestStats();
+        }
+      }
+      setTimeout(() => { if (card) card.classList.remove('wrong'); }, 1500);
+    }
+  }
+
+  function playEvacAnim(evacId, onComplete) {
+    const anim = document.getElementById('evacAnim');
+    const group = document.getElementById('evacAnimGroup');
+    const title = document.getElementById('evacAnimTitle');
+    const sub = document.getElementById('evacAnimSub');
+    const label = anim.querySelector('.evac-anim-label');
+    const cfg = EVAC_ANIM[evacId] || EVAC_ANIM.stretcher;
+    group.innerHTML = cfg.actors.map((a, i) =>
+      `<span class="${cfg.bobs[i] ? 'bob' : ''}" style="animation-delay:${i * 0.12}s">${a}</span>`
+    ).join('');
+    title.textContent = cfg.title;
+    sub.textContent = cfg.sub;
+    group.style.animation = 'none'; label.style.animation = 'none';
+    void group.offsetWidth;
+    group.style.animation = ''; label.style.animation = '';
+    anim.classList.add('show');
+    setTimeout(() => {
+      anim.classList.remove('show');
+      if (onComplete) onComplete();
+    }, 4200);
+  }
+
+  // ============ 结算页 ============
+  function showResultPage() {
+    const icon = $('resultIcon');
+    const title = $('resultTitle');
+    const text = $('resultText');
+    const sub = $('resultSub');
+    const errorList = $('errorList');
+    const btn1 = $('resultBtn1');
+    const btn2 = $('resultBtn2');
+
+    if (currentMode === 'learn') {
+      icon.textContent = '🎉';
+      title.textContent = '学习完成！';
+      const meta = SCENE_META[currentScene];
+      const sceneName = meta ? meta.name : SCENES[currentScene].name;
+      text.textContent = `恭喜你完成了「${sceneName}」的救护流程学习！`;
+      sub.style.display = 'block';
+      sub.innerHTML = `<strong>💡 学习建议</strong>：建议你切换到测试模式，通过专项测试或全随机模式检验自己的掌握程度。全随机模式中，伤情需要你自己通过检伤判断，更贴近真实战场。`;
+      errorList.classList.add('hidden');
+      errorList.innerHTML = '';
+      btn1.textContent = '📖 继续学习其他伤情';
+      btn1.onclick = () => {
+        renderSceneList($('learnSceneList'), startLearn);
+        showPage(learnScenePage);
+      };
+      btn2.textContent = '🏠 返回首页';
+      btn2.onclick = () => {
+        showPage(homePage);
+      };
+    } else {
+      icon.textContent = errors.length === 0 ? '🏆' : '🎯';
+      title.textContent = errors.length === 0 ? '完美通过！' : '测试完成！';
+      const meta = SCENE_META[currentScene];
+      const sceneName = meta ? meta.name : SCENES[currentScene].name;
+      let praise = '';
+      if (errors.length === 0) praise = '全程零失误，你对战伤救护流程的掌握非常扎实，已达到专业水平！';
+      else if (errors.length <= 2) praise = '大部分操作准确无误，只有少量失误。继续保持，你已经非常接近完美！';
+      else if (errors.length <= 4) praise = '整体流程掌握不错，但还有几处需要加强。建议回到教学模式复习巩固。';
+      else praise = '完成了测试，但错误较多。建议系统复习一遍教学模式，再来挑战！';
+      text.textContent = `你完成了「${sceneName}」的${testType === 'random' ? '全随机模式' : '专项测试'}。${praise}`;
+      sub.style.display = 'block';
+      sub.innerHTML = `<strong>📊 本次成绩</strong>：共出现 <strong style="color:${errors.length === 0 ? '#3fb950' : '#f85149'}">${errors.length}</strong> 处错误。`;
+
+      // 错误详情列表
+      if (errors.length > 0) {
+        errorList.classList.remove('hidden');
+        let listHtml = `<div class="error-list-title">❌ 错误详情与正确做法</div>`;
+        errors.forEach((e, i) => {
+          listHtml += `<div class="error-item">
+            <div class="ei-step">第 ${i + 1} 处 · ${e.step}</div>
+            <div class="ei-row wrong">
+              <span class="ei-label">你的选择：</span>
+              <span class="ei-value">${e.usedTool}</span>
+            </div>
+            <div class="ei-row right">
+              <span class="ei-label">正确做法：</span>
+              <span class="ei-value">${e.correctTool}</span>
+            </div>
+          </div>`;
+        });
+        errorList.innerHTML = listHtml;
+      } else {
+        errorList.classList.add('hidden');
+        errorList.innerHTML = '';
+      }
+
+      btn1.textContent = '🔄 重新开始该测试';
+      btn1.onclick = () => {
+        if (testType === 'random') {
+          startRandomTest();
+        } else {
+          startSpecialtyTest(currentScene);
+        }
+      };
+      btn2.textContent = '🏠 返回首页';
+      btn2.onclick = () => {
+        showPage(homePage);
+      };
+    }
+    showPage(resultPage);
+  }
+
+  // ============ 重置按钮 ============
+  resetBtn.addEventListener('click', () => {
+    if (isRandomMode) {
+      startRandomTest();
+    } else {
+      initScene();
+      updateGameSceneLabel();
+    }
+  });
+
+  // ============ 启动 ============
+  showPage(homePage);
+
+})();
+</script>
+</body>
+</html>
