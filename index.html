@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>战伤救护交互教学 · v22</title>
+<title>战伤救护交互教学 · v23</title>
 <style>
   html { overflow-y: scroll; overflow-x: hidden; height: 100%; }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -111,6 +111,18 @@
   .guide-tip.transfer-tip .gt-title { color: #f85149; }
   .guide-tip.treat-tip { background: rgba(13, 26, 45, 0.96); border-color: #1f6feb; color: #a8c8ff; }
   .guide-tip.treat-tip .gt-title { color: #58a6ff; }
+  /* v23 新增：下方详细讲解提示 */
+  .guide-tip .gt-hint-below {
+    display: block;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed rgba(88,166,255,0.25);
+    color: #8b949e;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+  .guide-tip.scan-tip .gt-hint-below { border-top-color: rgba(210,153,34,0.3); }
+  .guide-tip .gt-hint-below strong { color: #58a6ff; }
 
   .battlefield, .casualty-area {
     width: 100%; background: #0d1117;
@@ -246,7 +258,7 @@
   .reset-btn { margin-top: 6px; margin-bottom: 20px; padding: 9px 26px; border-radius: 9px; background: #161b22; border: 1px solid #21262d; color: #8b949e; font-size: 0.82rem; cursor: pointer; min-height: 42px; }
   .reset-btn:active { background: #21262d; }
 
-  /* ===== v22：救治完成——伤员独立全屏展示（不遮挡伤员） ===== */
+  /* v22：救治完成——伤员独立全屏展示（不遮挡伤员） */
   .casualty-spotlight {
     position: fixed;
     inset: 0;
@@ -261,7 +273,6 @@
   }
   @keyframes spotlightIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* 顶部提示条：紧凑，不占高度 */
   .casualty-spotlight .spotlight-label {
     display: flex;
     align-items: center;
@@ -285,7 +296,6 @@
     letter-spacing: 0.06em;
   }
 
-  /* 中间：伤员，占满剩余空间 */
   .casualty-spotlight .spotlight-svg-wrap {
     flex: 1;
     width: 100%;
@@ -304,7 +314,6 @@
     filter: drop-shadow(0 12px 40px rgba(0,0,0,0.6));
   }
 
-  /* 底部倒计时：紧凑 */
   .casualty-spotlight .spotlight-countdown {
     display: flex;
     align-items: center;
@@ -491,6 +500,7 @@
       <div class="guide-tip treat-tip" id="treatGuide" style="margin-bottom:8px;">
         <span class="gt-title">📖 操作指引</span>
         <span class="gt-step" id="treatGuideText">按住手指或鼠标，在伤员身上滑动扫描</span>
+        <span class="gt-hint-below" id="treatGuideHint" style="display:none;">↓ <strong>下方有每一步骤的详细讲解</strong>，跟着做就行</span>
       </div>
       <div class="casualty-area" id="casualtyArea">
         <svg class="casualty-svg" viewBox="0 0 320 400" id="casualtySvg" preserveAspectRatio="xMidYMid meet">
@@ -1236,6 +1246,7 @@
   const stageBar = $('stageBar');
   const treatGuide = $('treatGuide');
   const treatGuideText = $('treatGuideText');
+  const treatGuideHint = $('treatGuideHint');
   const gameSceneLabel = $('gameSceneLabel');
 
   function showPage(pageEl) {
@@ -1351,6 +1362,7 @@
     });
   }
 
+  // ============ v23：更新操作指引（教学模式加提示） ============
   function updateTreatGuide() {
     const scene = SCENES[currentScene];
     const step = scene.steps[currentStep];
@@ -1366,6 +1378,12 @@
       } else {
         treatGuideText.innerHTML = '从下方器材栏<strong>拖动正确器材</strong>到伤员身上';
       }
+    }
+    // 教学模式显示"下方有详细讲解"提示
+    if (currentMode === 'learn') {
+      treatGuideHint.style.display = 'block';
+    } else {
+      treatGuideHint.style.display = 'none';
     }
   }
 
@@ -1402,7 +1420,6 @@
 
   function pickRandomEnv() { return ENV_POOL[Math.floor(Math.random() * ENV_POOL.length)]; }
 
-  // ============ v22：清理 spotlight ============
   function cleanupSpotlight() {
     if (treatCompleteTimer) {
       clearInterval(treatCompleteTimer);
@@ -1410,11 +1427,9 @@
     }
     const spotlight = document.getElementById('casualtySpotlight');
     if (spotlight) {
-      // 把 SVG 移回原位置
       const wrap = spotlight.querySelector('#spotlightSvgWrap');
       if (wrap && casualtySvg.parentNode === wrap) {
         wrap.removeChild(casualtySvg);
-        // 把它放回 casualtyArea 里（原位置）
         if (casualtyArea) {
           const magnifierEl = document.getElementById('magnifier');
           if (magnifierEl && magnifierEl.parentNode === casualtyArea) {
@@ -1429,7 +1444,6 @@
     casualtyArea.classList.remove('completed');
   }
 
-  // ============ v22：救治完成 → 全屏伤员展示 ============
   function completeTreatment(scene) {
     sceneCompleted = true;
 
@@ -1443,7 +1457,6 @@
       testStats.innerHTML = html;
     }
 
-    // 1. 创建全屏 spotlight 容器（只有一条顶部标签 + 伤员 + 底部倒计时）
     const spotlight = document.createElement('div');
     spotlight.className = 'casualty-spotlight';
     spotlight.id = 'casualtySpotlight';
@@ -1461,11 +1474,9 @@
     `;
     document.body.appendChild(spotlight);
 
-    // 2. 把伤员 SVG 从 casualty-area 移到 spotlight 里
     const wrap = document.getElementById('spotlightSvgWrap');
     wrap.appendChild(casualtySvg);
 
-    // 3. 5 秒倒计时
     let count = 5;
     const numEl = document.getElementById('spotlightCount');
     if (treatCompleteTimer) clearInterval(treatCompleteTimer);
@@ -1476,7 +1487,6 @@
         clearInterval(treatCompleteTimer);
         treatCompleteTimer = null;
 
-        // 把 SVG 移回原位
         const wrapNow = document.getElementById('spotlightSvgWrap');
         if (wrapNow && casualtySvg.parentNode === wrapNow) {
           wrapNow.removeChild(casualtySvg);
@@ -1488,10 +1498,8 @@
           casualtyArea.appendChild(casualtySvg);
         }
 
-        // 移除 spotlight
         spotlight.remove();
 
-        // 进入后送
         treatStage.classList.add('hidden');
         evacStage.classList.remove('hidden');
         updateStageBar('evac');
@@ -1500,7 +1508,6 @@
     }, 1000);
   }
 
-  // ============ 火线转移 ============
   function initTransfer() {
     const t = currentEnv;
     transferText.textContent = `战场环境：${t.envDesc}。请选择搬运方式，然后拖拽伤员到安全区。`;
