@@ -17,7 +17,6 @@
   .page { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .hidden { display: none !important; }
 
-  /* 首页 */
   .home-title { font-size: 1.5rem; font-weight: 700; color: #58a6ff; margin-bottom: 4px; text-align: center; letter-spacing: 0.05em; }
   .home-sub { font-size: 0.78rem; color: #8b949e; margin-bottom: 28px; text-align: center; line-height: 1.7; }
   .home-logo { font-size: 3.5rem; margin-bottom: 8px; filter: drop-shadow(0 0 20px rgba(88,166,255,0.4)); }
@@ -35,14 +34,12 @@
   .home-card.test .hc-title { color: #3fb950; }
   .home-card .hc-desc { font-size: 0.72rem; color: #8b949e; line-height: 1.5; }
 
-  /* 通用页面 */
   .page-header { width: 100%; display: flex; align-items: center; gap: 10px; padding-bottom: 8px; border-bottom: 1px solid #1e2a3a; margin-bottom: 4px; }
   .page-header .ph-back { padding: 6px 12px; border-radius: 8px; border: 1px solid #30363d; background: #161b22; color: #8b949e; font-size: 0.75rem; cursor: pointer; min-height: 34px; display: flex; align-items: center; gap: 4px; }
   .page-header .ph-back:active { background: #21262d; }
   .page-header .ph-title { font-size: 1rem; font-weight: 600; color: #58a6ff; }
   .page-sub { font-size: 0.72rem; color: #8b949e; line-height: 1.6; text-align: center; margin-bottom: 6px; }
 
-  /* 伤情选择 */
   .scene-list { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 4px 0; }
   .scene-item { padding: 14px 12px; border-radius: 12px; background: #111820; border: 2px solid #1e2a3a; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 70px; text-align: left; }
   .scene-item:active { transform: scale(0.97); }
@@ -51,7 +48,6 @@
   .scene-item .si-name { font-size: 0.82rem; font-weight: 600; color: #e6edf3; }
   .scene-item .si-desc { font-size: 0.65rem; color: #8b949e; line-height: 1.4; }
 
-  /* 测试模式选择 */
   .test-mode-card { width: 100%; padding: 22px 20px; border-radius: 16px; background: linear-gradient(135deg, #111820, #0d1117); border: 2px solid #1e2a3a; cursor: pointer; transition: all .25s; display: flex; align-items: center; gap: 16px; text-align: left; position: relative; overflow: hidden; }
   .test-mode-card:active { transform: scale(0.98); }
   .test-mode-card.specialty { border-color: #a371f7; }
@@ -65,7 +61,6 @@
   .test-mode-card.random .tmc-title { color: #f85149; }
   .test-mode-card .tmc-desc { font-size: 0.72rem; color: #8b949e; line-height: 1.55; }
 
-  /* 游戏页顶部 */
   .game-topbar { width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 0 8px; margin-bottom: 2px; }
   .game-topbar .gt-back { padding: 6px 10px; border-radius: 8px; border: 1px solid #30363d; background: #161b22; color: #8b949e; font-size: 0.72rem; cursor: pointer; min-height: 34px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .game-topbar .gt-back:active { background: #21262d; }
@@ -73,7 +68,6 @@
   .game-topbar .gt-scene strong { color: #58a6ff; font-weight: 600; }
   .game-topbar .gt-scene.unknown strong { color: #d29922; }
 
-  /* 结算页 */
   .result-card { width: 100%; padding: 32px 24px; border-radius: 20px; background: linear-gradient(135deg, #111820, #0a0e14); border: 2px solid #1e2a3a; text-align: center; position: relative; overflow: hidden; margin-top: 20px; }
   .result-card.success { border-color: #238636; }
   .result-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top, rgba(63,185,80,0.12), transparent 70%); pointer-events: none; }
@@ -100,7 +94,6 @@
   .result-btn.secondary { background: #161b22; border: 1px solid #30363d; color: #8b949e; }
   .result-btn.secondary:active { background: #21262d; transform: scale(0.98); }
 
-  /* 游戏页 */
   .stage-bar { display: flex; gap: 4px; margin-bottom: 10px; width: 100%; max-width: 420px; }
   .stage-dot { flex: 1; text-align: center; font-size: 0.6rem; color: #484f58; padding: 6px 2px; border-radius: 6px; background: #111820; border: 1px solid #1e2a3a; transition: all .3s; }
   .stage-dot.active { color: #58a6ff; border-color: #1f6feb; background: #0d1a2d; }
@@ -119,7 +112,6 @@
   .guide-tip.treat-tip { background: rgba(13, 26, 45, 0.96); border-color: #1f6feb; color: #a8c8ff; }
   .guide-tip.treat-tip .gt-title { color: #58a6ff; }
 
-  /* 战场容器：允许垂直滚动 */
   .battlefield, .casualty-area {
     width: 100%; background: #0d1117;
     border-radius: 14px; border: 1px solid #1e2a3a; position: relative;
@@ -128,14 +120,12 @@
     user-select: none;
   }
   .casualty-area { background: #111820; display: flex; align-items: center; justify-content: center; }
-  /* 检伤扫描模式：锁定触摸，防止扫描时滚动 */
   .casualty-area.scanning { touch-action: none; }
   .battlefield-svg, .casualty-svg { width: 100%; height: 100%; display: block; pointer-events: none; }
 
   .safe-zone { position: absolute; right: 6px; top: 60px; width: 78px; height: 250px; border: 2px dashed #3fb950; border-radius: 10px; background: rgba(63,185,80,0.06); pointer-events: none; }
   .safe-zone-label { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-size: 0.65rem; color: #3fb950; font-weight: bold; }
 
-  /* 可拖拽伤员元素：禁止触摸滚动 */
   .casualty-draggable {
     position: absolute; left: 30px; top: 130px;
     width: 80px; height: 110px; cursor: grab;
@@ -146,7 +136,6 @@
   .casualty-draggable.dragging { filter: drop-shadow(0 0 16px #58a6ff); transition: none; }
   .casualty-draggable svg { width: 100%; height: 100%; display: block; pointer-events: none; }
 
-  /* 横向滚动栏 */
   .carry-select, .toolbar-scroll {
     width: 100%; overflow-x: auto; overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -163,7 +152,6 @@
   .carry-btn.correct { border-color: #238636; color: #3fb950; background: #0a1f12; }
   .carry-btn.wrong { border-color: #da3633; color: #f85149; background: #1f0a0c; }
 
-  /* 测试模式卡片 */
   .tool-cards { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 4px 0; min-height: 84px; }
   .tool-card { padding: 10px 6px; border-radius: 10px; border: 2px solid #21262d; background: #161b22; color: #8b949e; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; min-height: 76px; animation: cardIn .28s ease-out; }
   @keyframes cardIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
@@ -174,7 +162,6 @@
   .tool-card .tc-label { font-size: 0.68rem; font-weight: 600; color: #e6edf3; line-height: 1.2; }
   .tool-card.viewing .tc-label { color: #58a6ff; }
 
-  /* 后送卡片 */
   .evac-cards { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 4px 0; min-height: 148px; }
   .evac-card { padding: 10px 12px; border-radius: 10px; border: 2px solid #21262d; background: #161b22; color: #8b949e; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; gap: 3px; min-height: 60px; }
   .evac-card:active { transform: scale(0.97); }
@@ -186,7 +173,6 @@
   .evac-card.viewing .ec-label { color: #58a6ff; }
   .evac-card .ec-tag { font-size: 0.68rem; color: #8b949e; line-height: 1.3; }
 
-  /* 详情面板 */
   .evac-detail, .tool-detail { width: 100%; border-radius: 12px; background: #111820; border: 1px solid #1e2a3a; overflow: hidden; min-height: 300px; }
   .evac-detail-header, .tool-detail-header { padding: 12px 16px; background: linear-gradient(90deg, #1f0d2d, #111820); border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; gap: 10px; }
   .tool-detail-header { background: linear-gradient(90deg, #0d1a2d, #111820); }
@@ -374,7 +360,6 @@
           <rect x="0" y="0" width="120" height="380" fill="rgba(218,54,51,0.08)"/>
           <text x="60" y="30" text-anchor="middle" fill="#f85149" font-size="12" font-weight="bold">⚠ 火力威胁区</text>
           <rect x="342" y="0" width="78" height="380" fill="rgba(63,185,80,0.06)"/>
-          <text x="381" y="30" text-anchor="middle" fill="#3fb950" font-size="12" font-weight="bold">安全区</text>
           <line x1="120" y1="0" x2="120" y2="380" stroke="#da3633" stroke-width="1" stroke-dasharray="6,4" opacity="0.5"/>
           <line x1="342" y1="0" x2="342" y2="380" stroke="#3fb950" stroke-width="1" stroke-dasharray="6,4" opacity="0.5"/>
           <rect x="200" y="90" width="30" height="200" rx="4" fill="#1a2a1a" stroke="#2a3a2a" stroke-width="1"/>
@@ -526,7 +511,6 @@
         <div class="magnifier" id="magnifier"></div>
       </div>
 
-      <!-- 器材栏 / 卡片：移到步骤提示上方 -->
       <div class="toolbar-scroll" id="toolbarScroll">
         <div class="toolbar" id="toolbar"></div>
       </div>
@@ -655,7 +639,6 @@
     { envType:'fire_high', envDesc:'敌火力威胁较小，可利用掩体', correctCarry:'drag' },
   ];
 
-  // 火线转移搬运方式详情（用于教学模式展示）
   const CARRY_DETAIL = {
     prone: {
       name: '侧身匍匐法',
@@ -1331,11 +1314,9 @@
 
   function pickRandomEnv() { return ENV_POOL[Math.floor(Math.random() * ENV_POOL.length)]; }
 
-  // ============ 火线转移 ============
   function initTransfer() {
     const t = currentEnv;
     transferText.textContent = `战场环境：${t.envDesc}。请选择搬运方式，然后拖拽伤员到安全区。`;
-    // 只有两种方式
     const options = [
       { id:'prone', icon:'🛡️', label:'侧身匍匐法' },
       { id:'drag', icon:'🪢', label:'拖拽搬运' }
@@ -1349,7 +1330,6 @@
         selectedCarry = btn.dataset.carry;
         const label = btn.querySelector('span:last-child').textContent;
 
-        // 教学模式：显示搬运方式详情（优缺点、场景适配度）
         if (currentMode === 'learn') {
           const detail = CARRY_DETAIL[selectedCarry];
           if (detail) {
@@ -1484,7 +1464,6 @@
     }
   });
 
-  // ============ 检伤救护 ============
   function startTreatStage() {
     const scene = SCENES[currentScene];
     renderTreatUI(scene);
@@ -1565,6 +1544,21 @@
     btn.disabled = false;
     btn.textContent = `确认使用「${step.label}」`;
     btn.onclick = function() { confirmTool(idx); };
+
+    // 滚动确认按钮到屏幕中央，确保移动端可见可点
+    setTimeout(() => {
+      const btnNow = document.getElementById('toolConfirmBtn');
+      if (btnNow) {
+        try {
+          btnNow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (err) {
+          // 兼容旧浏览器
+          const rect = btnNow.getBoundingClientRect();
+          const scrollTarget = window.pageYOffset + rect.top - window.innerHeight / 2 + rect.height / 2;
+          window.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+        }
+      }
+    }, 150);
   }
 
   function confirmTool(idx) {
@@ -1653,7 +1647,7 @@
   function startScanMode() { 
     isScanning = true; 
     magnifier.classList.add('show'); 
-    casualtyArea.classList.add('scanning'); // 锁定触摸，防止扫描时滚动
+    casualtyArea.classList.add('scanning');
   }
   function stopScanMode() { 
     isScanning = false; 
@@ -1731,7 +1725,6 @@
     }, 800);
   }
 
-  // 器材栏滚动
   let isScrollDragging = false, scrollStartX = 0, scrollStartLeft = 0;
   toolbarScroll.addEventListener('mousedown', (e) => {
     if (e.target.closest('.tool-item')) return;
@@ -1824,7 +1817,6 @@
     }
   }
 
-  // ============ 后送 ============
   function initEvac() {
     const scene = SCENES[currentScene];
     evacText.textContent = '点击下方卡片查看每种搬运方式的详细利弊，了解后再确认选择。';
@@ -1931,7 +1923,6 @@
     }, 4200);
   }
 
-  // ============ 结算页 ============
   function showResultPage() {
     const icon = $('resultIcon');
     const title = $('resultTitle');
